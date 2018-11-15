@@ -1,0 +1,50 @@
+<%= render :partial => 'action_menu' %>
+
+<h2><%= l(:label_risk) %> #<%= @risk.id %></h2>
+
+<div class="<%= @risk.css_classes %> issue details">
+  <div class="subject">
+    <h3><%= @risk.subject %></h3>
+  </div>
+
+  <p class="author">
+    <%= authoring @risk.created_on, @risk.author %>.
+    <% if @risk.created_on != @risk.updated_on %>
+      <%= l(:label_updated_time, time_tag(@risk.updated_on)).html_safe %>.
+    <% end %>
+  </p>
+
+  <div class="attributes">
+    <%= issue_fields_rows do |rows|
+      rows.left l(:field_status), @risk.status_label, :class => 'status'
+
+      rows.left l(:field_assigned_to), (@risk.assigned_to ? link_to_user(@risk.assigned_to) : "-"), :class => 'assigned-to'
+    end %>
+  </div>
+
+  <% if @risk.description? -%>
+    <hr />
+    <% if @risk.description? %>
+      <div class="description">
+        <div class="contextual">
+          <%= link_to l(:button_quote), quoted_risk_path(@risk), :remote => true, :method => 'post', :class => 'icon icon-comment' if @risk.notes_addable? %>
+        </div>
+
+        <p><strong><%=l(:field_description)%></strong></p>
+        <div class="wiki">
+          <%= textilizable @risk, :description %>
+        </div>
+      </div>
+    <% end %>
+  <% end -%>
+
+  <hr />
+
+  <div id="relations">
+    <%= render :partial => 'relations' %>
+  </div>
+</div>
+
+<% html_title l(:label_risk) + " ##{@risk.id}: #{@risk.subject}" %>
+
+<%= context_menu %>

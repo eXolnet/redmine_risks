@@ -1,0 +1,7 @@
+<h2><%= l(:label_risk) %> #<%= @risk.id %></h2>
+
+<%= render :partial => 'edit' %>
+
+<% content_for :header_tags do %>
+    <%= robot_exclusion_tag %>
+<% end %>

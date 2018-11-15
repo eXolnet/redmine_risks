@@ -1,0 +1,23 @@
+<%= title l(:label_new_risk) %>
+
+<%= call_hook(:view_risk_new_top, {:risk => @risk}) %>
+
+<%= labelled_form_for @risk, :url => project_risks_path(@project), :html => {:id => 'risk-form'} do |f| %>
+  <%= error_messages_for 'risk' %>
+  <div class="box tabular">
+    <div id="all_attributes">
+      <%= render :partial => 'form', :locals => {:f => f} %>
+    </div>
+  </div>
+
+  <%= submit_tag l(:button_create) %>
+  <%= submit_tag l(:button_create_and_continue), :name => 'continue' %>
+  <%= preview_link preview_new_risk_path(:project_id => @risk.project), 'risk-form' %>
+<% end %>
+
+<div id="preview" class="wiki"></div>
+
+<% content_for :header_tags do %>
+  <%= robot_exclusion_tag %>
+<% end %>
+

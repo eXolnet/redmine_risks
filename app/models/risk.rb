@@ -15,7 +15,7 @@ class Risk < ActiveRecord::Base
                      :scope => lambda {|options| options[:open_risks] ? self.open : self.all}
 
   acts_as_event :title => Proc.new {|o| l(:label_risk_request) + " ##{o.id}: #{o.subject}"},
-                :url => Proc.new {|o| {:controller => 'pulls', :action => 'show', :id => o.id}},
+                :url => Proc.new {|o| {:controller => 'risks', :action => 'show', :id => o.id}},
                 :type => Proc.new {|o| 'risk' + (o.closed? ? '-closed' : '') }
 
   acts_as_activity_provider :scope => joins(:project).preload(:project, :author),
@@ -24,7 +24,7 @@ class Risk < ActiveRecord::Base
   attr_reader :current_journal
   delegate :notes, :notes=, :private_notes, :private_notes=, :to => :current_journal, :allow_nil => true
 
-  validates_presence_of :subject, :project, :commit_base, :commit_head
+  validates_presence_of :subject, :project
   validates_presence_of :author, :if => Proc.new {|issue| issue.new_record? || issue.author_id_changed?}
   validates_length_of :subject, :maximum => 255
 
@@ -226,7 +226,7 @@ class Risk < ActiveRecord::Base
 
   # Returns the names of attributes that are journalized when updating the issue
   def journalized_attribute_names
-    Pull.column_names - %w(id created_on updated_on closed_on)
+    Risk.column_names - %w(id created_on updated_on closed_on)
   end
 
   # Returns the id of the last journal or nil
@@ -268,12 +268,12 @@ class Risk < ActiveRecord::Base
     result
   end
 
-  # Return true if the pull is closed, otherwise false
+  # Return true if the risk is closed, otherwise false
   def closed?
     closed_on.present?
   end
 
-  # Return true if the pull is being closed
+  # Return true if the risk is being closed
   def closing?
     if new_record?
       closed?
@@ -282,7 +282,7 @@ class Risk < ActiveRecord::Base
     end
   end
 
-  # Users the pull request can be assigned to
+  # Users the risk request can be assigned to
   def assignable_users
     users = project.assignable_users.to_a
     users << author if author && author.active?
@@ -330,30 +330,30 @@ class Risk < ActiveRecord::Base
   end
 
   # Preloads users who updated last a collection of issues
-  def self.load_visible_last_updated_by(pulls, user=User.current)
-    if pulls.any?
-      pull_ids = pulls.map(&:id)
-      journal_ids = Journal.joins(pull: :project).
-        where(:journalized_type => 'Pull', :journalized_id => pull_ids).
+  def self.load_visible_last_updated_by(risks, user=User.current)
+    if risks.any?
+      risk_ids = risks.map(&:id)
+      journal_ids = Journal.joins(risk: :project).
+        where(:journalized_type => 'Risk', :journalized_id => risk_ids).
         where(Journal.visible_notes_condition(user, :skip_pre_condition => true)).
         group(:journalized_id).
         maximum(:id).
         values
       journals = Journal.where(:id => journal_ids).preload(:user).to_a
 
-      pulls.each do |pull|
-        journal = journals.detect {|j| j.journalized_id == pull.id}
-        pull.instance_variable_set("@last_updated_by", journal.try(:user) || '')
+      risks.each do |risk|
+        journal = journals.detect {|j| j.journalized_id == risk.id}
+        risk.instance_variable_set("@last_updated_by", journal.try(:user) || '')
       end
     end
   end
 
-  # Preloads visible last notes for a collection of pulls
-  def self.load_visible_last_notes(pulls, user=User.current)
-    if pulls.any?
-      pull_ids = pulls.map(&:id)
-      journal_ids = Journal.joins(pull: :project).
-        where(:journalized_type => 'Pull', :journalized_id => pull_ids).
+  # Preloads visible last notes for a collection of risks
+  def self.load_visible_last_notes(risks, user=User.current)
+    if risks.any?
+      risk_ids = risks.map(&:id)
+      journal_ids = Journal.joins(risk: :project).
+        where(:journalized_type => 'Risk', :journalized_id => risk_ids).
         where(Journal.visible_notes_condition(user, :skip_pre_condition => true)).
         where.not(notes: '').
         group(:journalized_id).
@@ -361,9 +361,9 @@ class Risk < ActiveRecord::Base
         values
       journals = Journal.where(:id => journal_ids).to_a
 
-      pulls.each do |pull|
-        journal = journals.detect {|j| j.journalized_id == pull.id}
-        pull.instance_variable_set("@last_notes", journal.try(:notes) || '')
+      risks.each do |risk|
+        journal = journals.detect {|j| j.journalized_id == risk.id}
+        risk.instance_variable_set("@last_notes", journal.try(:notes) || '')
       end
     end
   end
@@ -381,7 +381,7 @@ class Risk < ActiveRecord::Base
   def find_referenced_issue_by_id(id)
     return nil if id.blank?
 
-    # TODO - Add a Setting `Setting.pull_cross_project_ref?` and verifiy if the issue can be linked
+    # TODO - Add a Setting `Setting.risk_cross_project_ref?` and verifiy if the issue can be linked
     Issue.find_by_id(id.to_i)
   end
 

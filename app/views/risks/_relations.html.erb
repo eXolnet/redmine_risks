@@ -1,0 +1,27 @@
+<% manage_allowed = User.current.allowed_to?(:manage_risk_relations, @project) %>
+
+<div class="contextual">
+  <% if manage_allowed %>
+    <%= toggle_link l(:button_add), 'new-relation-form', {:focus => 'issue_id'} %>
+  <% end %>
+</div>
+
+<p><strong><%=l(:label_related_issues)%></strong></p>
+
+<%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do %>
+  <%= render_risk_relations(@risk) %>
+<% end %>
+
+<% if manage_allowed %>
+  <%= form_tag({:controller => 'risk_issues', :action => 'create', :risk_id => @risk},
+               :remote => true,
+               :method => :post,
+               :id => 'new-relation-form',
+               :style => 'display: none;') do |f| %>
+    <%= l(:label_issue) %> #<%= text_field_tag 'issue_id', '', :size => 10 %>
+    <%= submit_tag l(:button_add) %>
+    <%= toggle_link l(:button_cancel), 'new-relation-form'%>
+  <% end %>
+<% end %>
+
+<%= javascript_tag "observeAutocompleteField('issue_id', '#{escape_javascript auto_complete_issues_path(:project_id => @project, :scope => 'all')}')" %>

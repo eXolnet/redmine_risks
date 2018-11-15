@@ -1,0 +1,10 @@
+<%= labelled_fields_for :risk, @risk do |f| %>
+
+  <div class="splitcontent">
+    <div class="splitcontentleft">
+      <% if @risk.safe_attribute? 'assigned_to_id' %>
+        <p><%= f.select :assigned_to_id, principals_options_for_select(@risk.assignable_users, @risk.assigned_to), :include_blank => true %></p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

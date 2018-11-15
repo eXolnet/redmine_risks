@@ -3,3 +3,5 @@ en:
   label_risks: Risks
   label_risk: Risk
   label_new_risk: New risk
+  label_risk_id: '#'
+  notice_pull_successful_create: "Risk successfully created."

@@ -1,0 +1,7 @@
+<% if @issue %>
+  $('#relations').html('<%= escape_javascript(render :partial => "risks/relations") %>');
+  $('#relation-<%= @issue.id %>').effect("highlight");
+  $('#issue_id').focus();
+<% else %>
+  alert("<%= raw(escape_javascript(l(:label_issue) + ' ' + l('activerecord.errors.messages.invalid'))) %>");
+<% end %>

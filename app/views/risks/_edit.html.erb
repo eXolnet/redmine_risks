@@ -1,0 +1,32 @@
+<%= labelled_form_for @risk, :html => {:id => 'risk-form'} do |f| %>
+  <%= error_messages_for 'risk' %>
+  <%= render :partial => 'conflict' if @conflict %>
+
+  <div class="box">
+    <% if @risk.attributes_editable? %>
+      <fieldset class="tabular"><legend><%= l(:label_change_properties) %></legend>
+        <div id="all_attributes">
+          <%= render :partial => 'form', :locals => {:f => f} %>
+        </div>
+      </fieldset>
+    <% end %>
+
+    <% if @risk.notes_addable? %>
+      <fieldset><legend><%= l(:field_notes) %></legend>
+        <%= f.text_area :notes, :cols => 60, :rows => 10, :class => 'wiki-edit', :no_label => true %>
+        <%= wikitoolbar_for 'risk_notes' %>
+
+        <% if @risk.safe_attribute? 'private_notes' %>
+          <%= f.check_box :private_notes, :no_label => true %> <label for="risk_private_notes"><%= l(:field_private_notes) %></label>
+        <% end %>
+      </fieldset>
+    <% end %>
+  </div>
+
+  <%= hidden_field_tag 'last_journal_id', params[:last_journal_id] || @risk.last_journal_id %>
+  <%= submit_tag l(:button_submit) %>
+  <%= preview_link preview_edit_risk_path(:project_id => @project, :id => @risk), 'risk-form' %>
+  | <%= link_to l(:button_cancel), risk_path(id: @risk.id), :onclick => params[:action] == 'show' ? "$('#update').hide(); return false;" : '' %>
+<% end %>
+
+<div id="preview" class="wiki"></div>

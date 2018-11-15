@@ -23,6 +23,9 @@ Redmine::Plugin.register :redmine_risks do
     # Related issues
     permission :manage_risk_relations, {}
   end
+
+  # Pulls are added to the activity view
+  activity_provider :risks, :class_name => ['Risk', 'Journal']
 end
 
 require 'redmine_risks'
