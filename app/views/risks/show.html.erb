@@ -19,6 +19,8 @@
       rows.left l(:field_status), @risk.status_label, :class => 'status'
 
       rows.left l(:field_assigned_to), (@risk.assigned_to ? link_to_user(@risk.assigned_to) : "-"), :class => 'assigned-to'
+
+      rows.left l(:field_category), @risk.category&.name, :class => 'category'
     end %>
   </div>
 

@@ -4,6 +4,7 @@ class Risk < ActiveRecord::Base
   belongs_to :project
   belongs_to :author, :class_name => 'User'
   belongs_to :assigned_to, :class_name => 'Principal'
+  belongs_to :category, :class_name => 'RiskCategory'
 
   has_many :journals, :as => :journalized, :dependent => :destroy, :inverse_of => :journalized
 

@@ -4,6 +4,7 @@ en:
   label_risk: Risk
   label_new_risk: New risk
   label_risk_id: '#'
+  enumeration_risk_categories: "Risk categories"
   notice_risk_successful_create: "Risk successfully created."
   notice_risk_successful_update: "Risk successfully updated."
   notice_risk_successful_delete: "Risk successfully deleted."
