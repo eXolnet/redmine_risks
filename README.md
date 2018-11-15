@@ -3,7 +3,7 @@
 [![Latest Release](https://img.shields.io/github/release/eXolnet/redmine-risks.svg?style=flat-square)](https://github.com/eXolnet/redmine-risks/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-8469ad.svg?style=flat-square)](LICENSE)
 [![Build Status](https://img.shields.io/travis/eXolnet/redmine-risks/master.svg?style=flat-square)](https://travis-ci.org/eXolnet/redmine-risks)
-[![Maintainability](https://api.codeclimate.com/v1/badges/f324ff43e12187b3b8aa/maintainability)](https://codeclimate.com/github/eXolnet/redmine-risks/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/85dc8be921f40a688900/maintainability)](https://codeclimate.com/github/eXolnet/redmine-risks/maintainability)
 
 Manage the results of the qualitative risk analysis, quantitative risk analysis, and risk response planning.
 
