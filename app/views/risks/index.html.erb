@@ -1,0 +1,20 @@
+<div class="contextual">
+  <% if User.current.allowed_to?(:add_risks, @project) %>
+    <%= link_to l(:label_new_risk), new_project_risk_path(@project), :class => 'icon icon-add' %>
+  <% end %>
+</div>
+
+<h2><%= l(:label_risks) %></h2>
+
+<%= form_tag(project_risks_path(@project), :method => :get, :id => 'query_form') do %>
+  <%= render :partial => 'queries/query_form' %>
+<% end %>
+
+<% if @query.valid? %>
+  <% if @risks.empty? %>
+    <p class="nodata"><%= l(:label_no_data) %></p>
+  <% else %>
+    <%= render :partial => 'risks/list', :locals => {:risks => @risks, :query => @query} %>
+    <span class="pagination"><%= pagination_links_full @risk_pages, @risk_count %></span>
+  <% end %>
+<% end %>
