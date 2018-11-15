@@ -4,4 +4,7 @@ en:
   label_risk: Risk
   label_new_risk: New risk
   label_risk_id: '#'
-  notice_pull_successful_create: "Risk successfully created."
+  notice_risk_successful_create: "Risk successfully created."
+  notice_risk_successful_update: "Risk successfully updated."
+  notice_risk_successful_delete: "Risk successfully deleted."
+  text_risks_destroy_confirmation: 'Are you sure you want to delete the selected risk(s)?'
