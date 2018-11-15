@@ -122,7 +122,7 @@ class RisksController < ApplicationController
     flash[:notice] = l(:notice_risk_successful_delete)
 
     respond_to do |format|
-      format.html { redirect_back_or_default _project_risks_path(@project) }
+      format.html { redirect_back_or_default project_risks_path(@project) }
       format.api  { render_api_ok }
     end
   end
