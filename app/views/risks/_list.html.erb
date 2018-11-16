@@ -5,10 +5,12 @@
   <table class="list risks odd-even <%= query.css_classes %>">
     <thead>
     <tr>
+      <!--
       <th class="checkbox hide-when-print">
         <%= check_box_tag 'check_all', '', false, :class => 'toggle-selection',
                           :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
       </th>
+      -->
       <% query.inline_columns.each do |column| %>
         <%= column_header(query, column, query_options) %>
       <% end %>
@@ -28,7 +30,7 @@
         </tr>
       <% end %>
       <tr id="risk-<%= risk.id %>" class="hascontextmenu <%= cycle('odd', 'even') %> <%= risk.css_classes %>">
-        <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", risk.id, false, :id => nil) %></td>
+        <!-- <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", risk.id, false, :id => nil) %></td> -->
         <% query.inline_columns.each do |column| %>
           <%= content_tag('td', column_content(column, risk), :class => column.css_classes) %>
         <% end %>
