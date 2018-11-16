@@ -60,6 +60,17 @@
   </div>
 <% end %>
 
+<div style="clear: both;"></div>
+
+<%= render :partial => 'action_menu' %>
+
+<% if @risk.editable? %>
+  <div id="update" style="display:none;">
+    <h3><%= l(:button_edit) %></h3>
+    <%= render :partial => 'edit' %>
+  </div>
+<% end %>
+
 <% html_title l(:label_risk) + " ##{@risk.id}: #{@risk.subject}" %>
 
 <%= context_menu %>

@@ -1,4 +1,4 @@
 <div class="contextual">
-  <%= link_to l(:button_edit), edit_risk_path(@risk), :class => 'icon icon-edit', :accesskey => accesskey(:edit) if @risk.attributes_editable? %>
+  <%= link_to l(:button_edit), edit_risk_path(@risk), :onclick => 'showAndScrollTo("update", "risk_notes"); return false;', :class => 'icon icon-edit', :accesskey => accesskey(:edit) if @risk.editable? %>
   <%= link_to l(:button_delete), risk_path(@risk), :data => {:confirm => l(:text_risks_destroy_confirmation)}, :method => :delete, :class => 'icon icon-del' if @risk.deletable? %>
 </div>
