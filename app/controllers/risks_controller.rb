@@ -100,7 +100,7 @@ class RisksController < ApplicationController
     end
 
     if saved
-      flash[:notice] = l(:notice_pull_successful_update) unless @risk.current_journal.new_record?
+      flash[:notice] = l(:notice_risk_successful_update) unless @risk.current_journal.new_record?
 
       respond_to do |format|
         format.html { redirect_back_or_default risk_path(@risk) }
