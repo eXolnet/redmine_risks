@@ -65,6 +65,8 @@ module RisksHelper
       format_risk_impact(value)
     when :strategy
       format_risk_strategy(value)
+    when :lessons
+      item.lessons? ? content_tag('div', textilizable(item, :lessons), :class => "wiki") : ''
     else
       column_value_without_risks(column, item, value)
     end

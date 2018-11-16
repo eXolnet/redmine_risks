@@ -1,0 +1,9 @@
+table.risks td.description,
+table.risks td.lessons,
+table.risks td.last_notes {
+  color: #777;
+  font-size: 90%;
+  padding: 4px 4px 4px 24px;
+  text-align: left;
+  white-space: normal;
+}

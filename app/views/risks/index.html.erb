@@ -18,3 +18,7 @@
     <span class="pagination"><%= pagination_links_full @risk_pages, @risk_count %></span>
   <% end %>
 <% end %>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'risks', :plugin => 'redmine_risks' %>
+<% end %>

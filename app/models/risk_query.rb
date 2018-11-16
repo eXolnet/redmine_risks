@@ -18,6 +18,7 @@ class RiskQuery < Query
     QueryColumn.new(:closed_on, :sortable => "#{Risk.table_name}.closed_on", :default_order => 'desc'),
     QueryColumn.new(:last_updated_by, :sortable => lambda {User.fields_for_order_statement("last_journal_user")}),
     QueryColumn.new(:description, :inline => false),
+    QueryColumn.new(:lessons, :inline => false),
     QueryColumn.new(:last_notes, :caption => :label_last_notes, :inline => false)
   ]
 
