@@ -12,6 +12,21 @@ module RisksHelper
     render_404
   end
 
+  def format_risk_probability(probability)
+    return unless Risk::RISK_PROBABILITY.include?(probability)
+    l("label_risk_probability_#{probability}")
+  end
+
+  def format_risk_impact(impact)
+    return unless Risk::RISK_IMPACT.include?(impact)
+    l("label_risk_impact_#{impact}")
+  end
+
+  def format_risk_strategy(strategy)
+    return unless Risk::RISK_STRATEGY.include?(strategy)
+    l("label_risk_strategy_#{strategy}")
+  end
+
   def render_risk_relations(risk)
     manage_relations = User.current.allowed_to?(:manage_risk_relations, risk.project)
 
@@ -41,13 +56,18 @@ module RisksHelper
   end
 
   def column_value_with_risks(column, item, value)
-    if item.is_a?(Risk)
-      if [:id, :subject].include? column.name
-        return link_to_risk item, :text => value
-      end
+    case column.name
+    when :id, :subject
+      link_to value, risk_path(item)
+    when :probability
+      format_risk_probability(value)
+    when :impact
+      format_risk_impact(value)
+    when :strategy
+      format_risk_strategy(value)
+    else
+      column_value_without_risks(column, item, value)
     end
-
-    column_value_without_risks(column, item, value)
   end
 
   alias_method_chain :column_value, :risks

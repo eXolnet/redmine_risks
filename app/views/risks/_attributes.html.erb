@@ -9,6 +9,18 @@
       <% if @risk.safe_attribute?('category_id') %>
         <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true %></p>
       <% end %>
+
+      <% if @risk.safe_attribute?('probability') %>
+        <p><%= f.select :probability, Risk::RISK_PROBABILITY.collect {|p| [format_risk_probability(p), p]}, :include_blank => true %></p>
+      <% end %>
+
+      <% if @risk.safe_attribute?('impact') %>
+        <p><%= f.select :impact, Risk::RISK_IMPACT.collect {|p| [format_risk_impact(p), p]}, :include_blank => true %></p>
+      <% end %>
+
+      <% if @risk.safe_attribute?('strategy') %>
+        <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
+      <% end %>
     </div>
   </div>
 <% end %>

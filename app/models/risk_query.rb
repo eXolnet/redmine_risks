@@ -8,6 +8,9 @@ class RiskQuery < Query
     QueryColumn.new(:id, :sortable => "#{Risk.table_name}.id", :default_order => 'desc', :caption => :label_risk_id),
     QueryColumn.new(:project, :groupable => "#{Risk.table_name}.project_id", :sortable => "#{Project.table_name}.id"),
     QueryColumn.new(:subject, :sortable => "#{Risk.table_name}.subject"),
+    QueryColumn.new(:category, :sortable => "#{RiskCategory.table_name}.position", :default_order => 'desc', :groupable => true),
+    QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc'),
+    QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc'),
     QueryColumn.new(:author, :sortable => lambda {User.fields_for_order_statement("authors")}, :groupable => true),
     QueryColumn.new(:assigned_to, :sortable => lambda {User.fields_for_order_statement}, :groupable => true),
     QueryColumn.new(:created_on, :sortable => "#{Risk.table_name}.created_on", :default_order => 'desc'),
@@ -25,6 +28,7 @@ class RiskQuery < Query
 
   def initialize_available_filters
     add_available_filter"project_id", :type => :list, :values => lambda { project_values } if project.nil?
+    add_available_filter "category_id", :type => :list, :values => RiskCategory.all.collect{|s| [s.name, s.id.to_s] }
     add_available_filter"author_id", :type => :list, :values => lambda { author_values }
     add_available_filter"assigned_to_id", :type => :list_optional, :values => lambda { assigned_to_values }
     add_available_filter"member_of_group", :type => :list_optional, :values => lambda { Group.givable.visible.collect {|g| [g.name, g.id.to_s] } }
@@ -50,7 +54,7 @@ class RiskQuery < Query
   end
 
   def default_columns_names
-    @default_columns_names = [:id, :subject, :author, :assigned_to, :updated_on]
+    @default_columns_names = [:id, :subject, :category, :probability, :impact, :assigned_to, :updated_on]
   end
 
   def default_sort_criteria
@@ -65,6 +69,7 @@ class RiskQuery < Query
     order_option = [group_by_sort_order, (options[:order] || sort_clause)].flatten.reject(&:blank?)
 
     scope = base_scope.
+      preload(:category).
       includes(([:project] + (options[:include] || [])).uniq).
       where(options[:conditions]).
       order(order_option).
@@ -213,7 +218,7 @@ class RiskQuery < Query
           " LEFT OUTER JOIN #{User.table_name} last_journal_user ON last_journal_user.id = #{Journal.table_name}.user_id";
       end
       if order_options.include?('enumerations')
-        joins << "LEFT OUTER JOIN #{IssuePriority.table_name} ON #{IssuePriority.table_name}.id = #{queried_table_name}.priority_id"
+        joins << "LEFT OUTER JOIN #{RiskCategory.table_name} ON #{RiskCategory.table_name}.id = #{queried_table_name}.priority_id"
       end
     end
 

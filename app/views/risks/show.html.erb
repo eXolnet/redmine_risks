@@ -21,6 +21,12 @@
       rows.left l(:field_assigned_to), (@risk.assigned_to ? link_to_user(@risk.assigned_to) : "-"), :class => 'assigned-to'
 
       rows.left l(:field_category), @risk.category&.name, :class => 'category'
+
+      rows.left l(:field_probability), format_risk_probability(@risk.probability), :class => 'probability'
+
+      rows.left l(:field_impact), format_risk_impact(@risk.impact), :class => 'impact'
+
+      rows.left l(:field_strategy), format_risk_strategy(@risk.strategy), :class => 'strategy'
     end %>
   </div>
 

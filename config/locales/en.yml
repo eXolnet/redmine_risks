@@ -4,6 +4,19 @@ en:
   label_risk: Risk
   label_new_risk: New risk
   label_risk_id: '#'
+  field_probability: Probability
+  field_impact: Impact
+  field_strategy: Strategy
+  label_risk_probability_high: High
+  label_risk_probability_medium: Medium
+  label_risk_probability_low: Low
+  label_risk_impact_high: High
+  label_risk_impact_medium: Medium
+  label_risk_impact_low: Low
+  label_risk_strategy_accept: Accept
+  label_risk_strategy_mitigate: Mitigate
+  label_risk_strategy_transfer: Transfer
+  label_risk_strategy_eliminate: Eliminate
   enumeration_risk_categories: "Risk categories"
   notice_risk_successful_create: "Risk successfully created."
   notice_risk_successful_update: "Risk successfully updated."

@@ -25,9 +25,16 @@ class Risk < ActiveRecord::Base
   attr_reader :current_journal
   delegate :notes, :notes=, :private_notes, :private_notes=, :to => :current_journal, :allow_nil => true
 
+  RISK_PROBABILITY = %w(high medium low)
+  RISK_IMPACT = %w(high medium low)
+  RISK_STRATEGY = %w(accept mitigate transfer eliminate)
+
   validates_presence_of :subject, :project
   validates_presence_of :author, :if => Proc.new {|issue| issue.new_record? || issue.author_id_changed?}
   validates_length_of :subject, :maximum => 255
+  validates_inclusion_of :probability, :in => RISK_PROBABILITY, :allow_nil => true
+  validates_inclusion_of :impact, :in => RISK_IMPACT, :allow_nil => true
+  validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_nil => true
 
   attr_protected :id
 
@@ -164,6 +171,9 @@ class Risk < ActiveRecord::Base
                   'assigned_to_id',
                   'subject',
                   'description',
+                  'probability',
+                  'impact',
+                  'strategy',
                   'custom_field_values',
                   'notes',
                   :if => lambda {|risk, user| risk.new_record? || risk.attributes_editable?(user) }
