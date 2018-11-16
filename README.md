@@ -15,15 +15,27 @@ This plugin version is compatible only with Redmine 3.4 and later.
 
 1. Download the .ZIP archive, extract files and copy the plugin directory to `#{REDMINE_ROOT}/plugins/redmine_risks`.
 
-2. Make a backup of your database, then run the following command to update it:
+2. From the directory `#{REDMINE_ROOT}`, install the plugin's dependencies:
+
+    ```bash
+    bundle install
+    ```
+
+3. Make a backup of your database, then run the following command to update it:
 
     ```bash
     bundle exec rake redmine:plugins:migrate RAILS_ENV=production NAME=redmine_risks
     ```
     
-3. Restart Redmine.
+4. Seed the default risk categories:
 
-4. Login and enable the "Risks" module on projects you want to use it.
+    ```bash
+    bundle exec rake risks:seed RAILS_ENV=production
+    ```
+    
+5. Restart Redmine.
+
+6. Login and enable the "Risks" module on projects you want to use it.
 
 ### Uninstall
 
