@@ -15,7 +15,7 @@ class Risk < ActiveRecord::Base
                      :preload => [:project],
                      :scope => lambda {|options| options[:open_risks] ? self.open : self.all}
 
-  acts_as_event :title => Proc.new {|o| l(:label_risk_request) + " ##{o.id}: #{o.subject}"},
+  acts_as_event :title => Proc.new {|o| l(:label_risk) + " ##{o.id}: #{o.subject}"},
                 :url => Proc.new {|o| {:controller => 'risks', :action => 'show', :id => o.id}},
                 :type => Proc.new {|o| 'risk' + (o.closed? ? '-closed' : '') }
 
