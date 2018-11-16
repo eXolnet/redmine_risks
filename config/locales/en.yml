@@ -19,6 +19,10 @@ en:
   label_risk_strategy_mitigate: Mitigate
   label_risk_strategy_transfer: Transfer
   label_risk_strategy_eliminate: Eliminate
+  default_risk_category_internal: Internal
+  default_risk_category_external: External
+  default_risk_category_technical: Technical
+  default_risk_category_unforeseeable: Unforeseeable
   enumeration_risk_categories: "Risk categories"
   notice_risk_successful_create: "Risk successfully created."
   notice_risk_successful_update: "Risk successfully updated."
