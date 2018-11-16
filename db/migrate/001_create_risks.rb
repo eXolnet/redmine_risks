@@ -9,7 +9,7 @@ class CreateRisks < ActiveRecord::Migration
       t.integer  :category_id
       t.integer  :probability
       t.integer  :impact
-      t.integer  :strategy
+      t.string  :strategy
       t.integer  :author_id,             :null => false
       t.integer  :assigned_to_id
       t.datetime :created_on,            :null => false

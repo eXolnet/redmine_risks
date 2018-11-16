@@ -11,6 +11,7 @@ class RiskQuery < Query
     QueryColumn.new(:category, :sortable => "#{RiskCategory.table_name}.position", :default_order => 'desc', :groupable => true),
     QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc'),
     QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc'),
+    QueryColumn.new(:magnitude, :sortable => "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)", :default_order => 'desc'),
     QueryColumn.new(:author, :sortable => lambda {User.fields_for_order_statement("authors")}, :groupable => true),
     QueryColumn.new(:assigned_to, :sortable => lambda {User.fields_for_order_statement}, :groupable => true),
     QueryColumn.new(:created_on, :sortable => "#{Risk.table_name}.created_on", :default_order => 'desc'),
@@ -55,11 +56,11 @@ class RiskQuery < Query
   end
 
   def default_columns_names
-    @default_columns_names = [:id, :subject, :category, :probability, :impact, :assigned_to, :updated_on]
+    @default_columns_names = [:id, :subject, :category, :probability, :impact, :magnitude, :assigned_to, :updated_on]
   end
 
   def default_sort_criteria
-    [['id', 'desc']]
+    [['magnitude', 'desc'], ['id', 'asc']]
   end
 
   def base_scope

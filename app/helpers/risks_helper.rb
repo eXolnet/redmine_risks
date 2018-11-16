@@ -13,18 +13,40 @@ module RisksHelper
   end
 
   def format_risk_probability(probability)
-    return unless Risk::RISK_PROBABILITY.include?(probability)
-    l("label_risk_probability_#{probability}")
+    format_risk_level(Risk::RISK_PROBABILITY, probability) {|p| l("label_risk_probability_#{p}")}
   end
 
   def format_risk_impact(impact)
-    return unless Risk::RISK_IMPACT.include?(impact)
-    l("label_risk_impact_#{impact}")
+    format_risk_level(Risk::RISK_IMPACT, impact) {|i| l("label_risk_impact_#{i}")}
   end
 
   def format_risk_strategy(strategy)
     return unless Risk::RISK_STRATEGY.include?(strategy)
     l("label_risk_strategy_#{strategy}")
+  end
+
+  def format_risk_level(levels, level, &block)
+    return if level.nil?
+
+    increment = 100 / (levels.count - 1)
+
+    if level % increment != 0
+      return level.to_s + "%"
+    end
+
+    yield levels[level / increment]
+  end
+
+  def format_risk_levels(levels, value = nil, &block)
+    index     = 0
+    increment = 100 / (levels.count - 1)
+
+    levels.collect do |level|
+      value  = index * increment
+      index += 1
+
+      [yield(value), value]
+    end
   end
 
   def render_risk_relations(risk)

@@ -25,16 +25,17 @@ class Risk < ActiveRecord::Base
   attr_reader :current_journal
   delegate :notes, :notes=, :private_notes, :private_notes=, :to => :current_journal, :allow_nil => true
 
-  RISK_PROBABILITY = %w(unlikely possible likely expected)
-  RISK_IMPACT = %w(minor moderate significant severe)
+  RISK_PROBABILITY = %w(unlikely low medium high expected)
+  RISK_IMPACT = %w(negligible minor moderate significant severe)
+  RISK_MAGNITUDE = %w(low medium high extreme)
   RISK_STRATEGY = %w(accept mitigate transfer eliminate)
 
   validates_presence_of :subject, :project
   validates_presence_of :author, :if => Proc.new {|issue| issue.new_record? || issue.author_id_changed?}
   validates_length_of :subject, :maximum => 255
-  validates_inclusion_of :probability, :in => RISK_PROBABILITY, :allow_nil => true
-  validates_inclusion_of :impact, :in => RISK_IMPACT, :allow_nil => true
-  validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_nil => true
+  validates_inclusion_of :probability, :in => 0..100, :allow_nil => true
+  validates_inclusion_of :impact, :in => 0..100, :allow_nil => true
+  validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_blank => true
 
   attr_protected :id
 
@@ -217,6 +218,15 @@ class Risk < ActiveRecord::Base
 
   def status_label
     l(("label_status_" + status).to_sym)
+  end
+
+  def magnitude
+    return unless probability && impact
+
+    index = (impact * (probability / 100.0) * (RISK_MAGNITUDE.count / 100.0)).round.to_i
+    level = RISK_MAGNITUDE[index]
+
+    l(("label_risk_level_" + level).to_sym)
   end
 
   def init_journal(user, notes = "")

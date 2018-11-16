@@ -11,11 +11,11 @@
       <% end %>
 
       <% if @risk.safe_attribute?('probability') %>
-        <p><%= f.select :probability, Risk::RISK_PROBABILITY.collect {|p| [format_risk_probability(p), p]}, :include_blank => true %></p>
+        <p><%= f.select :probability, format_risk_levels(Risk::RISK_PROBABILITY, @risk.probability) {|p| format_risk_probability(p)}, :include_blank => true %></p>
       <% end %>
 
       <% if @risk.safe_attribute?('impact') %>
-        <p><%= f.select :impact, Risk::RISK_IMPACT.collect {|p| [format_risk_impact(p), p]}, :include_blank => true %></p>
+        <p><%= f.select :impact, format_risk_levels(Risk::RISK_IMPACT, @risk.impact) {|i| format_risk_impact(i)}, :include_blank => true %></p>
       <% end %>
 
       <% if @risk.safe_attribute?('strategy') %>
