@@ -161,6 +161,10 @@ class RisksController < ApplicationController
     render :template => 'journals/new'
   end
 
+  def bulk_update
+    #
+  end
+
   private
 
   def build_new_risk_from_params
@@ -169,6 +173,8 @@ class RisksController < ApplicationController
     @risk.author ||= User.current
 
     attrs = (params[:risk] || {}).deep_dup
+    attrs.delete_if {|k,v| v.blank?}
+
     @risk.safe_attributes = attrs
   end
 
