@@ -7,12 +7,14 @@ en:
   field_probability: Probability
   field_impact: Impact
   field_strategy: Strategy
-  label_risk_probability_high: High
-  label_risk_probability_medium: Medium
-  label_risk_probability_low: Low
-  label_risk_impact_high: High
-  label_risk_impact_medium: Medium
-  label_risk_impact_low: Low
+  label_risk_probability_unlikely: Unlikely
+  label_risk_probability_possible: Possible
+  label_risk_probability_likely: Likely
+  label_risk_probability_expected: Expected
+  label_risk_impact_minor: Minor
+  label_risk_impact_moderate: Moderate
+  label_risk_impact_significant: Significant
+  label_risk_impact_severe: Severe
   label_risk_strategy_accept: Accept
   label_risk_strategy_mitigate: Mitigate
   label_risk_strategy_transfer: Transfer

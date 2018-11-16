@@ -25,8 +25,8 @@ class Risk < ActiveRecord::Base
   attr_reader :current_journal
   delegate :notes, :notes=, :private_notes, :private_notes=, :to => :current_journal, :allow_nil => true
 
-  RISK_PROBABILITY = %w(high medium low)
-  RISK_IMPACT = %w(high medium low)
+  RISK_PROBABILITY = %w(unlikely possible likely expected)
+  RISK_IMPACT = %w(minor moderate significant severe)
   RISK_STRATEGY = %w(accept mitigate transfer eliminate)
 
   validates_presence_of :subject, :project
