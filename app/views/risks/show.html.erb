@@ -53,6 +53,13 @@
   </div>
 </div>
 
+<% if @journals.present? %>
+  <div id="history">
+    <h3><%=l(:label_history)%></h3>
+    <%= render :partial => 'history', :locals => { :risk => @risk, :journals => @journals } %>
+  </div>
+<% end %>
+
 <% html_title l(:label_risk) + " ##{@risk.id}: #{@risk.subject}" %>
 
 <%= context_menu %>
