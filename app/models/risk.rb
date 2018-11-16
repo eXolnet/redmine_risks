@@ -174,6 +174,7 @@ class Risk < ActiveRecord::Base
                   'probability',
                   'impact',
                   'strategy',
+                  'lessons',
                   'custom_field_values',
                   'notes',
                   :if => lambda {|risk, user| risk.new_record? || risk.attributes_editable?(user) }

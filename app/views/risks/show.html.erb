@@ -46,6 +46,18 @@
     <% end %>
   <% end -%>
 
+  <% if @risk.lessons? -%>
+    <hr />
+    <% if @risk.lessons? %>
+      <div class="lessons">
+        <p><strong><%=l(:field_lessons)%></strong></p>
+        <div class="wiki">
+          <%= textilizable @risk, :lessons %>
+        </div>
+      </div>
+    <% end %>
+  <% end -%>
+
   <hr />
 
   <div id="relations">

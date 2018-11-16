@@ -7,6 +7,7 @@ en:
   field_probability: Probability
   field_impact: Impact
   field_strategy: Strategy
+  field_lessons: Lessons learned
   label_risk_probability_unlikely: Unlikely
   label_risk_probability_possible: Possible
   label_risk_probability_likely: Likely
