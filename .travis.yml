@@ -12,6 +12,8 @@ cache: bundler
 env:
   - REDMINE_VER=3.4.6 DB=mysql
   - REDMINE_VER=3.4.6 DB=postgresql
+  - REDMINE_VER=3.4.0 DB=mysql
+  - REDMINE_VER=3.4.0 DB=postgresql
 
 before_install:
   - export PLUGIN_NAME=redmine_risks
