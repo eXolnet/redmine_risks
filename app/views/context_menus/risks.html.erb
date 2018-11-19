@@ -1,6 +1,35 @@
 <ul>
   <%= call_hook(:view_risks_context_menu_start, {:risks => @risks, :can => @can, :back => @back }) %>
 
+  <% if @safe_attributes.include?('assigned_to_id') && @assignables.present? -%>
+    <li class="folder">
+      <a href="#" class="submenu"><%= l(:field_assigned_to) %></a>
+      <ul>
+        <% if @assignables.include?(User.current) %>
+          <li>
+            <%= context_menu_link "<< #{l(:label_me)} >>", bulk_update_risks_path(:ids => @risk_ids, :risk => {'assigned_to_id' => User.current}, :back_url => @back),
+                                  :method => :post,
+                                  :disabled => !@can[:edit] %>
+          </li>
+        <% end %>
+        <% @assignables.each do |u| -%>
+          <li>
+            <%= context_menu_link u.name, bulk_update_risks_path(:ids => @risk_ids, :risk => {'assigned_to_id' => u}, :back_url => @back),
+                                  :method => :post,
+                                  :selected => (@risk && u == @risk.assigned_to),
+                                  :disabled => !@can[:edit] %>
+          </li>
+        <% end -%>
+        <li>
+          <%= context_menu_link l(:label_nobody), bulk_update_risks_path(:ids => @risk_ids, :risk => {'assigned_to_id' => 'none'}, :back_url => @back),
+                                :method => :post,
+                                :selected => (@risk && @risk.assigned_to.nil?),
+                                :disabled => !@can[:edit] %>
+        </li>
+      </ul>
+    </li>
+  <% end %>
+
   <% if @safe_attributes.include?('category_id') -%>
     <li class="folder">
       <a href="#" class="submenu"><%= l(:field_category) %></a>
@@ -23,28 +52,6 @@
     </li>
   <% end -%>
 
-  <% if @safe_attributes.include?('probability') -%>
-    <li class="folder">
-      <a href="#" class="submenu"><%= l(:field_probability) %></a>
-      <ul>
-        <% (format_risk_levels(Risk::RISK_PROBABILITY) {|p| format_risk_probability(p)}).each do |p| -%>
-          <li>
-            <%= context_menu_link p[0], bulk_update_risks_path(:ids => @risk_ids, :risk => {'probability' => p[1]}, :back_url => @back),
-                                  :method => :post,
-                                  :selected => (@risk && p[1] == @risk.probability),
-                                  :disabled => !@can[:edit] %>
-          </li>
-        <% end -%>
-        <li>
-          <%= context_menu_link l(:label_none), bulk_update_risks_path(:ids => @risk_ids, :risk => {'probability' => 'none'}, :back_url => @back),
-                                :method => :post,
-                                :selected => (@risk && @risk.probability.nil?),
-                                :disabled => !@can[:edit] %>
-        </li>
-      </ul>
-    </li>
-  <% end -%>
-
   <% if @safe_attributes.include?('impact') -%>
     <li class="folder">
       <a href="#" class="submenu"><%= l(:field_impact) %></a>
@@ -61,6 +68,28 @@
           <%= context_menu_link l(:label_none), bulk_update_risks_path(:ids => @risk_ids, :risk => {'impact' => 'none'}, :back_url => @back),
                                 :method => :post,
                                 :selected => (@risk && @risk.impact.nil?),
+                                :disabled => !@can[:edit] %>
+        </li>
+      </ul>
+    </li>
+  <% end -%>
+
+  <% if @safe_attributes.include?('probability') -%>
+    <li class="folder">
+      <a href="#" class="submenu"><%= l(:field_probability) %></a>
+      <ul>
+        <% (format_risk_levels(Risk::RISK_PROBABILITY) {|p| format_risk_probability(p)}).each do |p| -%>
+          <li>
+            <%= context_menu_link p[0], bulk_update_risks_path(:ids => @risk_ids, :risk => {'probability' => p[1]}, :back_url => @back),
+                                  :method => :post,
+                                  :selected => (@risk && p[1] == @risk.probability),
+                                  :disabled => !@can[:edit] %>
+          </li>
+        <% end -%>
+        <li>
+          <%= context_menu_link l(:label_none), bulk_update_risks_path(:ids => @risk_ids, :risk => {'probability' => 'none'}, :back_url => @back),
+                                :method => :post,
+                                :selected => (@risk && @risk.probability.nil?),
                                 :disabled => !@can[:edit] %>
         </li>
       </ul>

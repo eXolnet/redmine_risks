@@ -2,7 +2,8 @@ class RisksController < ApplicationController
   default_search_scope :risks
   menu_item :risks
 
-  before_action :find_risk, :only => [:show, :edit, :update, :destroy, :quoted]
+  before_action :find_risk, :only => [:show, :edit, :update, :quoted]
+  before_action :find_risks, :only => [:bulk_update, :destroy]
   before_action :find_optional_project, :only => [:index, :new, :create]
   before_action :build_new_risk_from_params, :only => [:new, :create]
 
@@ -115,9 +116,15 @@ class RisksController < ApplicationController
   end
 
   def destroy
-    raise Unauthorized unless @risk.deletable?
+    raise Unauthorized unless @risks.all?(&:deletable?)
 
-    @risk.destroy
+    @risks.each do |risk|
+      begin
+        risk.reload.destroy
+      rescue ::ActiveRecord::RecordNotFound # raised by #reload if issue no longer exists
+        # nothing to do, issue was already deleted (eg. by a parent)
+      end
+    end
 
     flash[:notice] = l(:notice_risk_successful_delete)
 
@@ -162,7 +169,34 @@ class RisksController < ApplicationController
   end
 
   def bulk_update
-    #
+    @risks.sort!
+
+    raise ::Unauthorized unless @risks.all?(&:attributes_editable?)
+
+    attributes = parse_params_for_bulk_update(params[:risk])
+    risks_unsaved = []
+    risks_saved = []
+
+    @risks.each do |risk_original|
+      risk_original.reload
+
+      risk = risk_original
+
+      risk.init_journal(User.current, params[:notes])
+      risk.safe_attributes = attributes
+
+      if risk.save
+        risks_saved << risk
+      else
+        risks_unsaved << risk_original
+      end
+    end
+
+    if risks_unsaved.empty?
+      flash[:notice] = l(:notice_risk_successful_update) unless risks_saved.empty?
+    end
+
+    redirect_back_or_default project_risks_path(@project)
   end
 
   private

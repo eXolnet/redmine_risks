@@ -19,6 +19,7 @@ module RedmineRisks
               return
             end
 
+            @risk_ids = @risks.map(&:id).sort
             @risk = @risks.first if @risks.size == 1
 
             @projects = @risks.collect(&:project).compact.uniq
@@ -29,6 +30,7 @@ module RedmineRisks
             end
 
             @project = @projects.first if @projects.size == 1
+            @assignables = @risks.map(&:assignable_users).reduce(:&)
             @safe_attributes = @risks.map(&:safe_attribute_names).reduce(:&)
 
             edit_allowed = @risks.all? {|t| t.editable?(User.current)}
