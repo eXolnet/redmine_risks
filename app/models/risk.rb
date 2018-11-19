@@ -36,7 +36,7 @@ class Risk < ActiveRecord::Base
   validates_length_of :subject, :maximum => 255
   validates_inclusion_of :probability, :in => 0..100, :allow_nil => true
   validates_inclusion_of :impact, :in => 0..100, :allow_nil => true
-  validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_blank => true
+  validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_nil => true
 
   attr_protected :id
 

@@ -12,6 +12,21 @@ module RisksHelper
     render_404
   end
 
+  def find_risks
+    @risks = Risk
+      .where(:id => (params[:id] || params[:ids]))
+      .preload(:project, :author, :assigned_to)
+      .to_a
+
+    raise ActiveRecord::RecordNotFound if @risks.empty?
+    raise Unauthorized unless @risks.all?(&:visible?)
+
+    @projects = @risks.collect(&:project).compact.uniq
+    @project = @projects.first if @projects.size == 1
+  rescue ActiveRecord::RecordNotFound
+    render_404
+  end
+
   def format_risk_status(status)
     l("label_risk_status_#{status}")
   end
