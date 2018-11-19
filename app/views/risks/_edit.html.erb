@@ -8,6 +8,10 @@
         <div id="all_attributes">
           <%= render :partial => 'form', :locals => {:f => f} %>
 
+          <% if @risk.safe_attribute?('strategy') %>
+            <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
+          <% end %>
+
           <% if @risk.safe_attribute? 'treatments' %>
             <p>
               <%= f.label_for_field :treatments %>
