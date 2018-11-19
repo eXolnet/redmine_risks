@@ -1,5 +1,5 @@
 class RiskQuery < Query
-  STATUS_OPTIONS = %w(opened closed)
+  include RisksHelper
 
   self.queried_class = Risk
   self.view_permission = :view_risks
@@ -25,7 +25,7 @@ class RiskQuery < Query
 
   def initialize(attributes=nil, *args)
     super attributes
-    self.filters ||= { 'status' => {:operator => "!", :values => ["closed"]} }
+    self.filters ||= { 'status' => {:operator => "=", :values => ["open"]} }
   end
 
   def initialize_available_filters
@@ -35,7 +35,7 @@ class RiskQuery < Query
     add_available_filter"assigned_to_id", :type => :list_optional, :values => lambda { assigned_to_values }
     add_available_filter"member_of_group", :type => :list_optional, :values => lambda { Group.givable.visible.collect {|g| [g.name, g.id.to_s] } }
     add_available_filter"assigned_to_role", :type => :list_optional, :values => lambda { Role.givable.collect {|r| [r.name, r.id.to_s] } }
-    add_available_filter"status", :type => :list, :values => STATUS_OPTIONS.map{|s| [l("label_status_#{s}"), s] }
+    add_available_filter"status", :type => :list, :values => Risk::RISK_STATUS.map{|s| [format_risk_status(s), s] }
     add_available_filter "subject", :type => :text
     add_available_filter "description", :type => :text
     add_available_filter "created_on", :type => :date_past

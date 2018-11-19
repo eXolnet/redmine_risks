@@ -2,6 +2,10 @@
 
   <div class="splitcontent">
     <div class="splitcontentleft">
+      <% if @risk.safe_attribute? 'status' %>
+        <p><%= f.select :status, Risk::RISK_STATUS.collect {|s| [format_risk_status(s), s]}, :include_blank => true %></p>
+      <% end %>
+
       <% if @risk.safe_attribute? 'assigned_to_id' %>
         <p><%= f.select :assigned_to_id, principals_options_for_select(@risk.assignable_users, @risk.assigned_to), :include_blank => true %></p>
       <% end %>

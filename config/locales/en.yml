@@ -10,6 +10,9 @@ en:
   field_strategy: Strategy
   field_treatments: Treatments
   field_lessons: Lessons learned
+  label_risk_status_open: Open
+  label_risk_status_closed: Closed
+  label_risk_status_rejected: Rejected
   label_risk_probability_unlikely: Unlikely
   label_risk_probability_low: Low
   label_risk_probability_medium: Medium

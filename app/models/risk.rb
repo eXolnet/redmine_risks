@@ -25,6 +25,7 @@ class Risk < ActiveRecord::Base
   attr_reader :current_journal
   delegate :notes, :notes=, :private_notes, :private_notes=, :to => :current_journal, :allow_nil => true
 
+  RISK_STATUS = %w(open closed rejected)
   RISK_PROBABILITY = %w(unlikely low medium high expected)
   RISK_IMPACT = %w(negligible minor moderate significant severe)
   RISK_MAGNITUDE = %w(low medium high extreme)
@@ -74,25 +75,26 @@ class Risk < ActiveRecord::Base
   before_save :force_updated_on_change, :update_closed_on, :set_assigned_to_was
   after_save :create_journal
 
-  state_machine :status, initial: :opened do
+  state_machine :status, initial: :open do
     event :close do
-      transition [:opened] => :closed
+      transition [:open] => :closed
     end
 
     event :reopen do
-      transition [:closed] => :opened
+      transition [:closed] => :open
     end
 
-    before_transition from: [:closed, :merged] do |risk, transition|
+    before_transition from: [:closed, :rejected] do |risk, transition|
       risk.closed_on  = nil
     end
 
-    before_transition any => :closed do |risk, transition|
+    before_transition any => [:closed, :rejected] do |risk, transition|
       risk.closed_on  = Time.now
     end
 
-    state :opened
+    state :open
     state :closed
+    state :rejected
   end
 
   # Returns true if usr or current user is allowed to view the issue
@@ -215,10 +217,6 @@ class Risk < ActiveRecord::Base
 
     # mass-assignment security bypass
     assign_attributes attrs, :without_protection => true
-  end
-
-  def status_label
-    l(("label_status_" + status).to_sym)
   end
 
   def magnitude

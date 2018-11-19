@@ -16,7 +16,7 @@
 
   <div class="attributes">
     <%= issue_fields_rows do |rows|
-      rows.left l(:field_status), @risk.status_label, :class => 'status'
+      rows.left l(:field_status), format_risk_status(@risk.status), :class => 'status'
 
       rows.left l(:field_assigned_to), (@risk.assigned_to ? link_to_user(@risk.assigned_to) : "-"), :class => 'assigned-to'
 

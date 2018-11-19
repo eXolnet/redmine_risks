@@ -12,6 +12,10 @@ module RisksHelper
     render_404
   end
 
+  def format_risk_status(status)
+    l("label_risk_status_#{status}")
+  end
+
   def format_risk_probability(probability)
     format_risk_level(Risk::RISK_PROBABILITY, probability) {|p| l("label_risk_probability_#{p}")}
   end
