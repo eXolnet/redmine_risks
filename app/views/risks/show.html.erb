@@ -32,37 +32,46 @@
 
   <% if @risk.description? -%>
     <hr />
-    <% if @risk.description? %>
-      <div class="description">
-        <div class="contextual">
-          <%= link_to l(:button_quote), quoted_risk_path(@risk), :remote => true, :method => 'post', :class => 'icon icon-comment' if @risk.notes_addable? %>
-        </div>
 
-        <p><strong><%=l(:field_description)%></strong></p>
-        <div class="wiki">
-          <%= textilizable @risk, :description %>
-        </div>
+    <div class="description">
+      <div class="contextual">
+        <%= link_to l(:button_quote), quoted_risk_path(@risk), :remote => true, :method => 'post', :class => 'icon icon-comment' if @risk.notes_addable? %>
       </div>
-    <% end %>
+
+      <p><strong><%=l(:field_description)%></strong></p>
+      <div class="wiki">
+        <%= textilizable @risk, :description %>
+      </div>
+    </div>
   <% end -%>
 
-  <% if @risk.lessons? -%>
+  <% if @risk.treatments? %>
     <hr />
-    <% if @risk.lessons? %>
-      <div class="lessons">
-        <p><strong><%=l(:field_lessons)%></strong></p>
-        <div class="wiki">
-          <%= textilizable @risk, :lessons %>
-        </div>
+
+    <div class="treatments">
+      <p><strong><%=l(:field_treatments)%></strong></p>
+      <div class="wiki">
+        <%= textilizable @risk, :treatments %>
       </div>
-    <% end %>
-  <% end -%>
+    </div>
+  <% end %>
 
   <hr />
 
   <div id="relations">
     <%= render :partial => 'relations' %>
   </div>
+
+  <% if @risk.lessons? -%>
+    <hr />
+
+    <div class="lessons">
+      <p><strong><%=l(:field_lessons)%></strong></p>
+      <div class="wiki">
+        <%= textilizable @risk, :lessons %>
+      </div>
+    </div>
+  <% end -%>
 </div>
 
 <% if @journals.present? %>

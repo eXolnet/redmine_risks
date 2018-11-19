@@ -175,6 +175,7 @@ class Risk < ActiveRecord::Base
                   'probability',
                   'impact',
                   'strategy',
+                  'treatments',
                   'lessons',
                   'custom_field_values',
                   'notes',

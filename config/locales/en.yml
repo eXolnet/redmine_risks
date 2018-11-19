@@ -8,6 +8,7 @@ en:
   field_impact: Impact
   field_magnitude: Magnitude
   field_strategy: Strategy
+  field_treatments: Treatments
   field_lessons: Lessons learned
   label_risk_probability_unlikely: Unlikely
   label_risk_probability_low: Low
