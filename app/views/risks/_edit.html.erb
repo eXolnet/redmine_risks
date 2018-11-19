@@ -7,42 +7,6 @@
       <fieldset class="tabular"><legend><%= l(:label_change_properties) %></legend>
         <div id="all_attributes">
           <%= render :partial => 'form', :locals => {:f => f} %>
-
-          <% if @risk.safe_attribute?('strategy') %>
-            <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
-          <% end %>
-
-          <% if @risk.safe_attribute? 'treatments' %>
-            <p>
-              <%= f.label_for_field :treatments %>
-              <%= link_to_function content_tag(:span, l(:button_edit), :class => 'icon icon-edit'), '$(this).hide(); $("#risk_treatments_and_toolbar").show()' unless @risk.new_record? %>
-              <%= content_tag 'span', :id => "risk_treatments_and_toolbar", :style => (@risk.new_record? ? nil : 'display:none') do %>
-                <%= f.text_area :treatments,
-                                :cols => 60,
-                                :rows => [[10, @risk.treatments.to_s.length / 50].max, 20].min,
-                                :accesskey => accesskey(:edit),
-                                :class => 'wiki-edit',
-                                :no_label => true %>
-              <% end %>
-            </p>
-            <%= wikitoolbar_for 'risk_treatments' %>
-          <% end %>
-
-          <% if @risk.safe_attribute? 'lessons' %>
-            <p>
-              <%= f.label_for_field :lessons %>
-              <%= link_to_function content_tag(:span, l(:button_edit), :class => 'icon icon-edit'), '$(this).hide(); $("#risk_lessons_and_toolbar").show()' unless @risk.new_record? %>
-              <%= content_tag 'span', :id => "risk_lessons_and_toolbar", :style => (@risk.new_record? ? nil : 'display:none') do %>
-                <%= f.text_area :lessons,
-                                :cols => 60,
-                                :rows => [[10, @risk.lessons.to_s.length / 50].max, 20].min,
-                                :accesskey => accesskey(:edit),
-                                :class => 'wiki-edit',
-                                :no_label => true %>
-              <% end %>
-            </p>
-            <%= wikitoolbar_for 'risk_lessons' %>
-          <% end %>
         </div>
       </fieldset>
     <% end %>

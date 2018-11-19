@@ -21,6 +21,10 @@
       <% if @risk.safe_attribute?('impact') %>
         <p><%= f.select :impact, format_risk_levels(Risk::RISK_IMPACT, @risk.impact) {|i| format_risk_impact(i)}, :include_blank => true %></p>
       <% end %>
+
+      <% if @risk.safe_attribute?('strategy') && ! @risk.new_record? %>
+        <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
+      <% end %>
     </div>
   </div>
 <% end %>
