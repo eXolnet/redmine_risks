@@ -116,4 +116,10 @@ module RisksHelper
   end
 
   alias_method_chain :column_value, :risks
+
+  def normalize_blank_values(attributes)
+    attributes
+      .map {|column, value| [column, value.present? ? value : nil] }
+      .to_h
+  end
 end

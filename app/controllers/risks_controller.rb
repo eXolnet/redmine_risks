@@ -226,7 +226,7 @@ class RisksController < ApplicationController
       end
     end
 
-    risk_attributes
+    normalize_blank_values(risk_attributes)
   end
 
   # Used by #edit and #update to set some common instance variables
