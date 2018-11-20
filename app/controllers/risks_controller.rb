@@ -55,7 +55,7 @@ class RisksController < ApplicationController
         flash[:notice] = l(:notice_risk_successful_create, :id => view_context.link_to("##{@risk.id}", risk_path(@risk), :title => @risk.subject))
 
         if params[:continue]
-          redirect_to _new_project_risk_path(@project, { :back_url => params[:back_url].presence })
+          redirect_to new_project_risk_path(@project, { :back_url => params[:back_url].presence })
         else
           redirect_back_or_default risk_path(@risk)
         end
