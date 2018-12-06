@@ -57,7 +57,7 @@ class RiskQuery < Query
   end
 
   def default_columns_names
-    @default_columns_names = [:id, :subject, :category, :probability, :impact, :magnitude, :assigned_to, :updated_on]
+    @default_columns_names = [:id, :subject, :category, :probability, :impact, :magnitude, :assigned_to, :updated_on, :treatments]
   end
 
   def default_sort_criteria
