@@ -19,7 +19,7 @@ class RisksControllerTest < ActionController::TestCase
   end
 
   def test_get_index_with_project
-    get :index, :project_id => 'ecookbook'
+    get :index, :params => { :project_id => 'ecookbook' }
 
     assert_response :success
   end
