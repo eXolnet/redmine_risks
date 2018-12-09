@@ -1,4 +1,6 @@
-class CreateRisks < ActiveRecord::Migration
+migration_class = ActiveRecord::VERSION::MAJOR >= 5 ? ActiveRecord::Migration[4.2] : ActiveRecord::Migration
+
+class CreateRisks < migration_class
   def change
     create_table :risks do |t|
       t.integer  :project_id,            :null => false
