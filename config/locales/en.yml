@@ -2,6 +2,7 @@
 en:
   label_risks: Risks
   label_risk: Risk
+  label_risk_plural: Risks
   label_new_risk: New risk
   label_risk_id: '#'
   field_probability: Probability
