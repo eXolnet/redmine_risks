@@ -38,7 +38,7 @@ class Risk < ActiveRecord::Base
   validates_inclusion_of :impact, :in => 0..100, :allow_nil => true
   validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_nil => true
 
-  attr_protected :id
+  attr_protected :id if ActiveRecord::VERSION::MAJOR <= 4
 
   scope :open, lambda {|*args|
     is_closed = args.size > 0 ? !args.first : false
