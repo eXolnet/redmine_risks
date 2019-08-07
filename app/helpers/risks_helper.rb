@@ -115,7 +115,8 @@ module RisksHelper
     end
   end
 
-  alias_method_chain :column_value, :risks
+  alias_method :column_value_without_risks, :column_value
+  alias_method :column_value, :column_value_with_risks
 
   def normalize_blank_values(attributes)
     attributes
