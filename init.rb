@@ -7,7 +7,7 @@ Redmine::Plugin.register :redmine_risks do
   author 'eXolnet'
   description 'Manage the results of the qualitative risk analysis, quantitative risk analysis, and risk response planning.'
   version RISKS_VERSION_NUMBER
-  url 'https://github.com/eXolnet/redmine-risks'
+  url 'https://github.com/eXolnet/redmine_risks'
   author_url 'https://www.exolnet.com'
 
   requires_redmine :version_or_higher => '3.4'
