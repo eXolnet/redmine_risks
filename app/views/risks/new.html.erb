@@ -12,10 +12,14 @@
 
   <%= submit_tag l(:button_create) %>
   <%= submit_tag l(:button_create_and_continue), :name => 'continue' %>
-  <%= preview_link preview_new_risk_path(:project_id => @risk.project), 'risk-form' %>
+  <% if Redmine::VERSION.to_s < '4.0' %>
+    <%= preview_link preview_new_risk_path(:project_id => @risk.project), 'risk-form' %>
+  <% end %>
 <% end %>
 
-<div id="preview" class="wiki"></div>
+<% if Redmine::VERSION.to_s < '4.0' %>
+  <div id="preview" class="wiki"></div>
+<% end %>
 
 <% content_for :header_tags do %>
   <%= robot_exclusion_tag %>

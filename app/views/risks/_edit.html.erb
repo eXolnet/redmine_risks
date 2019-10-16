@@ -25,8 +25,12 @@
 
   <%= hidden_field_tag 'last_journal_id', params[:last_journal_id] || @risk.last_journal_id %>
   <%= submit_tag l(:button_submit) %>
-  <%= preview_link preview_edit_risk_path(:project_id => @project, :id => @risk), 'risk-form' %>
+  <% if Redmine::VERSION.to_s < '4.0' %>
+    <%= preview_link preview_edit_risk_path(:project_id => @project, :id => @risk), 'risk-form' %>
+  <% end %>
   | <%= link_to l(:button_cancel), risk_path(id: @risk.id), :onclick => params[:action] == 'show' ? "$('#update').hide(); return false;" : '' %>
 <% end %>
 
-<div id="preview" class="wiki"></div>
+<% if Redmine::VERSION.to_s < '4.0' %>
+  <div id="preview" class="wiki"></div>
+<% end %>
