@@ -200,6 +200,10 @@ class Risk < ActiveRecord::Base
   # attr_accessible is too rough because we still want things like
   # Issue.new(:project => foo) to work
   def safe_attributes=(attrs, user=User.current)
+    if attrs.respond_to?(:to_unsafe_hash)
+      attrs = attrs.to_unsafe_hash
+    end
+
     @attributes_set_by = user
     return unless attrs.is_a?(Hash)
 
@@ -215,8 +219,7 @@ class Risk < ActiveRecord::Base
       attrs['custom_fields'].select! {|c| editable_custom_field_ids.include?(c['id'].to_s)}
     end
 
-    # mass-assignment security bypass
-    assign_attributes attrs, :without_protection => true
+    super(attrs, user)
   end
 
   def magnitude
