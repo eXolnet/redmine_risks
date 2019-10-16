@@ -226,7 +226,7 @@ class RisksController < ApplicationController
       end
     end
 
-    normalize_blank_values(risk_attributes)
+    normalize_blank_values(risk_attributes.to_unsafe_h)
   end
 
   # Used by #edit and #update to set some common instance variables
