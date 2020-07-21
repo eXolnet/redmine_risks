@@ -13,9 +13,7 @@ env:
   - REDMINE_VER=4.0.4 DB=mysql
   - REDMINE_VER=4.0.4 DB=postgresql
   - REDMINE_VER=3.4.11 DB=mysql
-  - REDMINE_VER=3.4.11 DB=postgresql
   - REDMINE_VER=3.4.0 DB=mysql
-  - REDMINE_VER=3.4.0 DB=postgresql
 
 before_install:
   - export PLUGIN_NAME=redmine_risks
