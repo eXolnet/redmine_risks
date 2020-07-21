@@ -5,7 +5,7 @@ services:
   - postgresql
 
 rvm:
-  - 2.3.1
+  - 2.4
 
 cache: bundler
 
