@@ -10,9 +10,10 @@ rvm:
 cache: bundler
 
 env:
-  - REDMINE_VER=4.0.4 DB=mysql
-  - REDMINE_VER=4.0.4 DB=postgresql
-  - REDMINE_VER=3.4.11 DB=mysql
+  - REDMINE_VER=4.1.1 DB=mysql
+  - REDMINE_VER=4.1.1 DB=postgresql
+  - REDMINE_VER=4.0.7 DB=mysql
+  - REDMINE_VER=3.4.13 DB=mysql
   - REDMINE_VER=3.4.0 DB=mysql
 
 before_install:
