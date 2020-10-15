@@ -1,0 +1,26 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        redmine: [v3.4, v4.0, v4.1]
+        db: [sqlite3, mysql, postgresql]
+        include:
+          - ruby: v2.4
+
+    name: Ruby ${{ matrix.ruby }} / Redmine ${{ matrix.redmine }} / ${{ matrix.db }}
+
+    steps:
+      - name: Execute tests
+        uses: two-pack/redmine-plugin-test-action@v2
+        with:
+          plugin_name: redmine_risks
+          redmine_version: ${{ matrix.redmine }}
+          ruby_version: ${{ matrix.ruby }}
+          database: ${{ matrix.db }}
