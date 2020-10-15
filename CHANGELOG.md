@@ -2,6 +2,12 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.2.0
+
+### Added
+
+* Add support for Redmine 4.1
+
 ## v1.1.2
 
 ### Fixed
