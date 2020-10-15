@@ -1,7 +1,7 @@
 # Redmine Risks
 
 [![Latest Release](https://img.shields.io/github/release/eXolnet/redmine-risks.svg?style=flat-square)](https://github.com/eXolnet/redmine-risks/releases)
-[![Redmine Compatibility](https://img.shields.io/static/v1?label=redmine&message=3.4.x-4.0.x&color=blue&style=flat-square)](https://www.redmine.org/plugins/redmine_risks)
+[![Redmine Compatibility](https://img.shields.io/static/v1?label=redmine&message=3.4.x-4.1.x&color=blue&style=flat-square)](https://www.redmine.org/plugins/redmine_risks)
 [![Software License](https://img.shields.io/badge/license-MIT-8469ad.svg?style=flat-square)](LICENSE)
 [![Build Status](https://img.shields.io/travis/eXolnet/redmine_risks/master.svg?style=flat-square)](https://travis-ci.org/eXolnet/redmine_risks)
 [![Maintainability](https://api.codeclimate.com/v1/badges/85dc8be921f40a688900/maintainability)](https://codeclimate.com/github/eXolnet/redmine-risks/maintainability)
