@@ -1,0 +1,43 @@
+# Portugueze strings go here for Rails i18n
+pt-BR:
+  label_risks: Riscos
+  label_risk: Risco
+  label_risk_plural: Riscos
+  label_new_risk: Novo risco
+  label_risk_id: '#'
+  field_probability: Probabilidade
+  field_impact: Impacto
+  field_magnitude: Magnitude
+  field_strategy: Stratégia
+  field_treatments: Tratamentos
+  field_lessons: Lições aprendidas
+  label_risk_status_open: Aberto
+  label_risk_status_closed: Fechado
+  label_risk_status_rejected: Rejeitado
+  label_risk_probability_unlikely: Improvavél
+  label_risk_probability_low: Baixo
+  label_risk_probability_medium: Médio
+  label_risk_probability_high: Alto
+  label_risk_probability_expected: Experado
+  label_risk_impact_negligible: Insignificante
+  label_risk_impact_minor: Menor
+  label_risk_impact_moderate: Moderado
+  label_risk_impact_significant: Significante
+  label_risk_impact_severe: Severo
+  label_risk_level_low: Baixo
+  label_risk_level_medium: Médio
+  label_risk_level_high: Alto
+  label_risk_level_extreme: Extremo
+  label_risk_strategy_accept: Aceitar
+  label_risk_strategy_mitigate: Mitigar
+  label_risk_strategy_transfer: Transferir
+  label_risk_strategy_eliminate: Eliminar
+  default_risk_category_internal: Interno
+  default_risk_category_external: Externo
+  default_risk_category_technical: Técnico
+  default_risk_category_unforeseeable: Imprevisível
+  enumeration_risk_categories: "Categoria de riscos"
+  notice_risk_successful_create: "Risco criado com sucesso."
+  notice_risk_successful_update: "Risco alterado com sucesso."
+  notice_risk_successful_delete: "Risco removido com sucesso"
+  text_risks_destroy_confirmation: 'Deseja realmente deletar o(s) risco(s)?'
