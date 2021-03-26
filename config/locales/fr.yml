@@ -14,7 +14,7 @@ fr:
   label_risk_status_open: Ouvert
   label_risk_status_closed: Fermé
   label_risk_status_rejected: Rejeté
-  label_risk_probability_unlikely: Peu propable
+  label_risk_probability_unlikely: Peu probable
   label_risk_probability_low: Basse
   label_risk_probability_medium: Moyenne
   label_risk_probability_high: Haute
