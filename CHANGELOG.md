@@ -2,6 +2,12 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.3.1
+
+* Fix typo in french translation
+* Fix bulk delete icon display
+* Fix bulk risks deletion
+
 ## v1.3.0
 
 * Add French translations
