@@ -19,3 +19,5 @@ resources :risks, :except => [:index, :new, :create] do
     post 'bulk_update'
   end
 end
+
+match '/risks', :controller => 'risks', :action => 'destroy', :via => :delete

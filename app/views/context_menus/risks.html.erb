@@ -119,7 +119,7 @@
   <% end -%>
 
   <li>
-    <%= context_menu_link l(:button_delete), project_risks_path(@project, :ids => @risk_ids, :back_url => @back),
+    <%= context_menu_link l(:button_delete), risks_path(:ids => @risk_ids, :back_url => @back),
                             :method => :delete,
                             :data => {:confirm => l(:text_risks_destroy_confirmation)},
                             :class => 'icon icon-del',
