@@ -1,0 +1,34 @@
+---
+risks_001:
+  id: 1
+  project_id: 1
+  subject: Sit sodales posuere
+  description: Amet tellus quis phasellus dis ultrices nulla
+  treatments: Fringilla nam in pellentesque quis habitasse per
+  lessons:
+  status: open
+  category_id: 1
+  probability: 25
+  impact: 50
+  strategy: mitigate
+  author_id: 1
+  assigned_to_id: 1
+  created_on: <%= 3.days.ago.to_s(:db) %>
+  updated_on: <%= 3.days.ago.to_s(:db) %>
+risks_002:
+  id: 2
+  project_id: 1
+  subject: Imperdiet nibh eleifend purus
+  description: Pulvinar enim aptent tristique vestibulum morbi tortor
+  treatments: Fringilla nam in pellentesque quis habitasse per
+  lessons: Sociosqu est rutrum montes hendrerit mi non
+  status: closed
+  category_id: 1
+  probability: 50
+  impact: 75
+  strategy: transfer
+  author_id: 1
+  assigned_to_id: 1
+  created_on: <%= 3.days.ago.to_s(:db) %>
+  updated_on: <%= 3.days.ago.to_s(:db) %>
+  closed_on: <%= 3.days.ago.to_s(:db) %>
