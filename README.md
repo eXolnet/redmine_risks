@@ -53,7 +53,7 @@ Explain how to use your package.
 Run tests using the following command:
 
 ```bash
-bundle exec rake redmine:plugins:test NAME=redmine_risks RAILS_ENV=development
+bundle exec rake redmine:plugins:test NAME=redmine_risks RAILS_ENV=test
 ```
 
 ## Contributing
