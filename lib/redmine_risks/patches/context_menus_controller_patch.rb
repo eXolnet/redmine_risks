@@ -23,13 +23,6 @@ module RedmineRisks
             @risk = @risks.first if @risks.size == 1
 
             @projects = @risks.collect(&:project).compact.uniq
-
-            unless @projects.size == 1
-              render_404
-              return
-            end
-
-            @project = @projects.first if @projects.size == 1
             @assignables = @risks.map(&:assignable_users).reduce(:&)
             @safe_attributes = @risks.map(&:safe_attribute_names).reduce(:&)
 
