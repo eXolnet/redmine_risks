@@ -1,6 +1,6 @@
 require 'redmine'
 
-RISKS_VERSION_NUMBER = '1.3.1'
+RISKS_VERSION_NUMBER = '1.4.0'
 
 Redmine::Plugin.register :redmine_risks do
   name 'Risks'
