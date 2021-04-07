@@ -214,6 +214,7 @@ class RisksController < ApplicationController
 
   def build_risk_params_for_update
     risk_attributes = (params[:risk] || {}).deep_dup
+    risk_attributes.transform_values! { |value| value.present? ? value : nil }
 
     if risk_attributes && params[:conflict_resolution]
       case params[:conflict_resolution]
@@ -226,7 +227,7 @@ class RisksController < ApplicationController
       end
     end
 
-    normalize_blank_values(risk_attributes.to_unsafe_h)
+    risk_attributes
   end
 
   # Used by #edit and #update to set some common instance variables
