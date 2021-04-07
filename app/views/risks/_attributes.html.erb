@@ -10,7 +10,7 @@
         <p><%= f.select :assigned_to_id, principals_options_for_select(@risk.assignable_users, @risk.assigned_to), :include_blank => true %></p>
       <% end %>
 
-      <% if @risk.safe_attribute?('category_id') %>
+      <% if @risk.safe_attribute?('category_id') && RiskCategory.active.any? %>
         <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true %></p>
       <% end %>
 
