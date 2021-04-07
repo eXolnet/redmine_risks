@@ -56,12 +56,6 @@
     </div>
   <% end %>
 
-  <hr />
-
-  <div id="relations">
-    <%= render :partial => 'relations' %>
-  </div>
-
   <% if @risk.lessons? -%>
     <hr />
 
@@ -72,6 +66,12 @@
       </div>
     </div>
   <% end -%>
+
+  <hr />
+
+  <div id="relations">
+    <%= render :partial => 'relations' %>
+  </div>
 </div>
 
 <% if @journals.present? %>
