@@ -166,4 +166,32 @@ class RisksControllerTest < ActionController::TestCase
     assert_response :success
     assert_match '<strong>Rhoncus turpis</strong> magnis blandit', @response.body
   end
+
+  def test_post_quoted
+    compatible_xhr_request :post, :quoted, :id => 1
+
+    assert_response :success
+    assert_match '> Amet tellus quis phasellus dis ultrices nulla', @response.body
+  end
+
+  def test_post_bulk_update
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {
+        :probability => 75,
+        :impact => 100,
+        :strategy => 'eliminate',
+      }
+
+    assert_response 302
+
+    risk1 = Risk.find(1)
+    assert_equal 75, risk1.probability
+    assert_equal 100, risk1.impact
+    assert_equal 'eliminate', risk1.strategy
+
+    risk2 = Risk.find(2)
+    assert_equal 75, risk2.probability
+    assert_equal 100, risk2.impact
+    assert_equal 'eliminate', risk2.strategy
+  end
 end

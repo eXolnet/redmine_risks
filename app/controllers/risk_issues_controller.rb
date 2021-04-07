@@ -20,7 +20,7 @@ class RiskIssuesController < ApplicationController
   end
 
   def destroy
-    @issue = Issue.visible.find_by_id(params[:issue_id])
+    @issue = @risk.issues.visible.find_by_id(params[:issue_id])
 
     if @issue
       @risk.init_journal(User.current)
