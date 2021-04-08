@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.4.1
+
+* Fix compatibility with latest Redmine Checklist version
+
 ## v1.4.0
 
 * Fix magnitude calculation on high probability (thanks to @zaburt)
