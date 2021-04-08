@@ -96,6 +96,16 @@ module RisksHelper
     content_tag('table', relations.join.html_safe, :class => 'list issues odd-even')
   end
 
+  def risk_details_to_strings(details, no_html=false, options={})
+    # The plugin Redmine Checklists patch the method IssuesHelper::details_to_strings and suppose
+    # that it's only used for issues. Thus, if the unpatched version exists, we'll use it instead.
+    if respond_to?('details_to_strings_without_checklists')
+      return details_to_strings_without_checklists(details, no_html, options)
+    end
+
+    details_to_strings(details, no_html, options)
+  end
+
   def column_value_with_risks(column, item, value)
     case column.name
     when :id, :subject
