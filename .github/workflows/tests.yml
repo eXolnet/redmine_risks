@@ -17,6 +17,9 @@ jobs:
     name: Ruby ${{ matrix.ruby }} / Redmine ${{ matrix.redmine }} / ${{ matrix.db }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Execute tests
         uses: two-pack/redmine-plugin-test-action@v2
         with:
