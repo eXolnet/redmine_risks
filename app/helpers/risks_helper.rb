@@ -114,6 +114,8 @@ module RisksHelper
       format_risk_probability(value)
     when :impact
       format_risk_impact(value)
+    when :status
+      format_risk_status(value)
     when :strategy
       format_risk_strategy(value)
     when :treatments
