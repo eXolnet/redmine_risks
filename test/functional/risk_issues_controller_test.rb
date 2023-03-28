@@ -21,8 +21,8 @@ class RiskIssuesControllerTest < ActionController::TestCase
     @request.session[:user_id] = 1
   end
 
-  def test_post_create
-    compatible_xhr_request :post, :create, :risk_id => 1, :issue_id => 2
+  def test_post_create_by_risk
+    compatible_xhr_request :post, :create_by_risk, :risk_id => 1, :issue_id => 2
 
     assert_response :success
 
@@ -32,8 +32,8 @@ class RiskIssuesControllerTest < ActionController::TestCase
     assert_equal [1, 2], risk.issues.map(&:id).sort
   end
 
-  def test_delete_destroy
-    compatible_xhr_request :delete, :destroy, :risk_id => 1, :issue_id => 1
+  def test_delete_destroy_by_risk
+    compatible_xhr_request :delete, :destroy_by_risk, :risk_id => 1, :issue_id => 1
 
     assert_response :success
 
