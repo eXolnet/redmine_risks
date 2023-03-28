@@ -10,15 +10,15 @@
     <% end %>
 
     <% if @risk.safe_attribute?('category_id') && RiskCategory.active.any? %>
-      <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true, :required => true %></p>
+      <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true %></p>
     <% end %>
 
     <% if @risk.safe_attribute?('probability') %>
-      <p><%= f.select :probability, format_risk_levels(Risk::RISK_PROBABILITY, @risk.probability) {|p| format_risk_probability(p)}, :include_blank => true, :required => true %></p>
+      <p><%= f.select :probability, format_risk_levels(Risk::RISK_PROBABILITY, @risk.probability) {|p| format_risk_probability(p)}, :include_blank => true %></p>
     <% end %>
 
     <% if @risk.safe_attribute?('impact') %>
-      <p><%= f.select :impact, format_risk_levels(Risk::RISK_IMPACT, @risk.impact) {|i| format_risk_impact(i)}, :include_blank => true, :required => true %></p>
+      <p><%= f.select :impact, format_risk_levels(Risk::RISK_IMPACT, @risk.impact) {|i| format_risk_impact(i)}, :include_blank => true %></p>
     <% end %>
 
     <% if @risk.safe_attribute?('strategy') && ! @risk.new_record? %>
