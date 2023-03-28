@@ -1,30 +1,28 @@
 <%= labelled_fields_for :risk, @risk do |f| %>
 
   <div class="splitcontent">
-    <div class="splitcontentleft">
-      <% if @risk.safe_attribute? 'status' %>
-        <p><%= f.select :status, Risk::RISK_STATUS.collect {|s| [format_risk_status(s), s]} %></p>
-      <% end %>
+    <% if @risk.safe_attribute? 'status' %>
+      <p><%= f.select :status, Risk::RISK_STATUS.collect {|s| [format_risk_status(s), s]} %></p>
+    <% end %>
 
-      <% if @risk.safe_attribute? 'assigned_to_id' %>
-        <p><%= f.select :assigned_to_id, principals_options_for_select(@risk.assignable_users, @risk.assigned_to), :include_blank => true %></p>
-      <% end %>
+    <% if @risk.safe_attribute? 'assigned_to_id' %>
+      <p><%= f.select :assigned_to_id, principals_options_for_select(@risk.assignable_users, @risk.assigned_to), :include_blank => true %></p>
+    <% end %>
 
-      <% if @risk.safe_attribute?('category_id') && RiskCategory.active.any? %>
-        <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true %></p>
-      <% end %>
+    <% if @risk.safe_attribute?('category_id') && RiskCategory.active.any? %>
+      <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true, :required => true %></p>
+    <% end %>
 
-      <% if @risk.safe_attribute?('probability') %>
-        <p><%= f.select :probability, format_risk_levels(Risk::RISK_PROBABILITY, @risk.probability) {|p| format_risk_probability(p)}, :include_blank => true %></p>
-      <% end %>
+    <% if @risk.safe_attribute?('probability') %>
+      <p><%= f.select :probability, format_risk_levels(Risk::RISK_PROBABILITY, @risk.probability) {|p| format_risk_probability(p)}, :include_blank => true, :required => true %></p>
+    <% end %>
 
-      <% if @risk.safe_attribute?('impact') %>
-        <p><%= f.select :impact, format_risk_levels(Risk::RISK_IMPACT, @risk.impact) {|i| format_risk_impact(i)}, :include_blank => true %></p>
-      <% end %>
+    <% if @risk.safe_attribute?('impact') %>
+      <p><%= f.select :impact, format_risk_levels(Risk::RISK_IMPACT, @risk.impact) {|i| format_risk_impact(i)}, :include_blank => true, :required => true %></p>
+    <% end %>
 
-      <% if @risk.safe_attribute?('strategy') && ! @risk.new_record? %>
-        <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
-      <% end %>
-    </div>
+    <% if @risk.safe_attribute?('strategy') && ! @risk.new_record? %>
+      <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
+    <% end %>
   </div>
 <% end %>

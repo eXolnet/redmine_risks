@@ -2,6 +2,8 @@ require 'redmine'
 
 RISKS_VERSION_NUMBER = '1.4.1'
 
+require_dependency 'redmine_risks/hooks'
+
 Redmine::Plugin.register :redmine_risks do
   name 'Risks'
   author 'eXolnet'

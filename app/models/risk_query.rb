@@ -9,8 +9,8 @@ class RiskQuery < Query
     QueryColumn.new(:project, :groupable => "#{Risk.table_name}.project_id", :sortable => "#{Project.table_name}.id"),
     QueryColumn.new(:subject, :sortable => "#{Risk.table_name}.subject"),
     QueryColumn.new(:category, :sortable => "#{RiskCategory.table_name}.position", :default_order => 'desc', :groupable => true),
-    QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc'),
-    QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc'),
+    QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc', :groupable => true),
+    QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc', :groupable => true),
     QueryColumn.new(:magnitude, :sortable => "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)", :default_order => 'desc'),
     QueryColumn.new(:status, :sortable => "#{Risk.table_name}.status"),
     QueryColumn.new(:strategy, :sortable => "#{Risk.table_name}.strategy"),
@@ -40,6 +40,8 @@ class RiskQuery < Query
     add_available_filter "assigned_to_role", :type => :list_optional, :values => lambda { Role.givable.collect {|r| [r.name, r.id.to_s] } }
     add_available_filter "status", :type => :list, :values => Risk::RISK_STATUS.map{|s| [format_risk_status(s), s] }
     add_available_filter "strategy", :type => :list, :values => Risk::RISK_STRATEGY.map{|s| [format_risk_strategy(s), s] }
+    add_available_filter "probability", :type => :list, :values => Risk::RISK_PROBABILITY.each_with_index.map{|s,i| [l("label_risk_probability_#{s}"), (i * 25).to_s] }
+    add_available_filter "impact", :type => :list, :values => Risk::RISK_IMPACT.each_with_index.map{|s,i| [l("label_risk_impact_#{s}"), (i * 25).to_s] }
     add_available_filter "subject", :type => :text
     add_available_filter "description", :type => :text
     add_available_filter "created_on", :type => :date_past

@@ -13,7 +13,7 @@
 <% end %>
 
 <% if manage_allowed %>
-  <%= form_tag({:controller => 'risk_issues', :action => 'create', :risk_id => @risk},
+  <%= form_tag({:controller => 'risk_issues', :action => 'create_by_risk', :risk_id => @risk},
                :remote => true,
                :method => :post,
                :id => 'new-relation-form',
