@@ -41,4 +41,24 @@ class RiskIssuesControllerTest < ActionController::TestCase
 
     assert_equal 0, risk.issues.count
   end
+
+  def test_post_create_by_issue
+    compatible_xhr_request :post, :create_by_issue, :risk_id => 1, :issue_id => 3
+
+    assert_response :success
+
+    risk = Risk.find(1)
+    assert_equal 2, risk.issues.count
+    assert_equal [1, 3], risk.issues.map(&:id).sort
+  end
+
+  def test_delete_destroy_by_issue
+    compatible_xhr_request :delete, :destroy_by_issue, :risk_id => 2, :issue_id => 3
+
+    assert_response :success
+
+    risk = Risk.find(1)
+
+    assert_equal 0, risk.issues.count
+  end  
 end
