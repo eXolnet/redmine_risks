@@ -57,7 +57,7 @@ class RiskIssuesControllerTest < ActionController::TestCase
 
     assert_response :success
 
-    risk = Risk.find(1)
+    risk = Risk.find(2)
 
     assert_equal 0, risk.issues.count
   end  
