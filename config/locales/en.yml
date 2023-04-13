@@ -42,3 +42,4 @@ en:
   notice_risk_successful_update: "Risk successfully updated."
   notice_risk_successful_delete: "Risk successfully deleted."
   text_risks_destroy_confirmation: 'Are you sure you want to delete the selected risk(s)?'
+  project_module_risks: Risk Management
