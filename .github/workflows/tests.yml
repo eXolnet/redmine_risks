@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        redmine: ["4.2"]
+        redmine: ["4.2", "5.0"]
         db: ["sqlite", "mysql", "postgresql"]
         include:
           - ruby: "2.7"
