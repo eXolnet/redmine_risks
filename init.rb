@@ -10,7 +10,7 @@ Redmine::Plugin.register :redmine_risks do
   url 'https://github.com/eXolnet/redmine_risks'
   author_url 'https://www.exolnet.com'
 
-  requires_redmine :version_or_higher => '3.4'
+  requires_redmine :version_or_higher => '4.2'
 
   menu :project_menu, :risks, { :controller => 'risks', :action => 'index' }, :caption => :label_risks, :before => :settings, :param => :project_id
   menu :project_menu, :new_risk, { :controller => 'risks', :action => 'new' }, :caption => :label_new_risk, :after => :new_wiki_sub, :param => :project_id, :parent => :new_object
@@ -29,4 +29,4 @@ Redmine::Plugin.register :redmine_risks do
   activity_provider :risks, :class_name => ['Risk', 'Journal']
 end
 
-require 'redmine_risks'
+require File.dirname(__FILE__) + '/lib/redmine_risks'

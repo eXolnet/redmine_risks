@@ -410,6 +410,11 @@ class Risk < ActiveRecord::Base
     Issue.find_by_id(id.to_i)
   end
 
+  def set_watcher(user, watching=true)
+    # acts_as_activity_provider call this methods when a new journal is created. Since
+    # risks doesn't have watcher, we don't have anything to do here.
+  end
+
   private
 
   def user_permission?(user, permission)

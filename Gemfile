@@ -1,1 +1,1 @@
-gem 'state_machines-activerecord', '~> 0.5.1'
+gem 'state_machines-activerecord', '~> 0.8.0'
