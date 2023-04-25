@@ -29,4 +29,4 @@ Redmine::Plugin.register :redmine_risks do
   activity_provider :risks, :class_name => ['Risk', 'Journal']
 end
 
-require 'redmine_risks'
+require File.dirname(__FILE__) + '/lib/redmine_risks'
