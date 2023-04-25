@@ -9,10 +9,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        redmine: ["3.4", "4.0", "4.1"]
+        redmine: ["4.2"]
         db: ["sqlite", "mysql", "postgresql"]
         include:
-          - ruby: "2.4"
+          - ruby: "2.7"
 
     name: "Ruby ${{ matrix.ruby }} / Redmine ${{ matrix.redmine }} / ${{ matrix.db }}"
 
