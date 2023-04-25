@@ -9,21 +9,18 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        redmine: [v3.4, v4.0, v4.1]
-        db: [sqlite3, mysql, postgresql]
+        redmine: ["3.4", "4.0", "4.1"]
+        db: ["sqlite", "mysql", "postgresql"]
         include:
-          - ruby: v2.4
+          - ruby: "2.4"
 
-    name: Ruby ${{ matrix.ruby }} / Redmine ${{ matrix.redmine }} / ${{ matrix.db }}
+    name: "Ruby ${{ matrix.ruby }} / Redmine ${{ matrix.redmine }} / ${{ matrix.db }}"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Execute tests
-        uses: two-pack/redmine-plugin-test-action@v2
+        uses: eXolnet/action-redmine-plugin@v1
         with:
-          plugin_name: redmine_risks
-          redmine_version: ${{ matrix.redmine }}
-          ruby_version: ${{ matrix.ruby }}
-          database: ${{ matrix.db }}
+          plugin_name: "redmine_risks"
+          redmine_version: "${{ matrix.redmine }}"
+          ruby_version: "${{ matrix.ruby }}"
+          database: "${{ matrix.db }}"
