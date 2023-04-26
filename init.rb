@@ -2,7 +2,7 @@ require 'redmine'
 
 RISKS_VERSION_NUMBER = '1.4.1'
 
-require_dependency 'redmine_risks/hooks'
+require_dependency File.dirname(__FILE__) + '/lib/redmine_risks/hooks'
 
 Redmine::Plugin.register :redmine_risks do
   name 'Risks'
