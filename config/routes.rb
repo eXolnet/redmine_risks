@@ -4,6 +4,7 @@
 match '/risks/preview/new/:project_id', :to => 'risks#preview', :as => 'preview_new_risk', :via => [:get, :post, :put, :patch]
 match '/risks/preview/edit/:id', :to => 'risks#preview', :as => 'preview_edit_risk', :via => [:get, :post, :put, :patch]
 post '/risks/:id/quoted', :to => 'risks#quoted', :id => /\d+/, :as => 'quoted_risk'
+match '/risks/preview', :to => 'previews#text', :as => 'preview_risk', :via => [:get, :post, :put, :patch]
 
 match '/risks/context_menu', :to => 'context_menus#risks', :as => 'risks_context_menu', :via => [:get, :post]
 match 'auto_completes/risks' => 'auto_completes#risks', via: :get, as: 'auto_complete_risks'
