@@ -1,3 +1,7 @@
+<% manage_allowed = User.current.allowed_to?(:manage_risk_relations, @project) %>
+<% if (User.current.allowed_to?(:view_risks, @project) && @issue.risks.any?) || manage_allowed %> 
+  <hr />
   <div id="risk-relations">
-    <%= render :partial => 'risks' %>
+    <%= render :partial => 'risks', :locals => {:manage_allowed => manage_allowed} %>
   </div>
+<% end %>
