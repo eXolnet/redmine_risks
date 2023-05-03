@@ -1,9 +1,11 @@
 <h3 class="title"><%=l(:label_new_risk)%></h3>
 <%= labelled_form_for @risk, :url => project_risks_path(@project), :remote => true do |f| %>
 <%= error_messages_for 'risk' %>
-<%= render :partial => 'form', :locals => { :f => f } %>
-  <p class="buttons">
-    <%= submit_tag l(:button_create), :name => nil %>
-    <%= link_to_function l(:button_cancel), "hideModal(this);" %>
-  </p>
+<div class="box tabular">
+  <%= render :partial => 'form', :locals => { :f => f } %>
+</div>
+<p class="buttons">
+  <%= submit_tag l(:button_create), :name => nil %>
+  <%= link_to_function l(:button_cancel), "hideModal(this);" %>
+</p>
 <% end %>
