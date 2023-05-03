@@ -1,5 +1,5 @@
 <div class="contextual">
-  <% if manage_allowed %>
+  <% if User.current.allowed_to?(:manage_risk_relations, @project) %>
     <%= toggle_link l(:button_add), 'new-risk-relation-form', {:focus => 'risk_id'} %>
   <% end %>
 </div>
@@ -9,7 +9,7 @@
     <%= render_risks_relations(@issue) %>
   <% end %>
 
-<% if manage_allowed %>
+<% if User.current.allowed_to?(:manage_risk_relations, @project) %>
   <%= form_tag({:controller => 'risk_issues', :action => 'create_by_issue', :issue_id => @issue.id},
               :remote => true,
               :method => :post,
