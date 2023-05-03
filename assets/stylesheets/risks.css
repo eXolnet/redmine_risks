@@ -8,9 +8,3 @@ table.risks td.last_notes {
   text-align: left;
   white-space: normal;
 }
-#issue_tree .issues, #risk-relations .risks {
-  margin: 10px 0 0;
-}
-#issue_tree > p, #risk-relations > p {
-  margin-bottom: 0;
-}
