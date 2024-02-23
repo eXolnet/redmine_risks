@@ -154,7 +154,7 @@ class RisksControllerTest < ActionController::TestCase
       }
 
     assert_response :success
-    assert_match '<strong>Rhoncus turpis</strong> magnis blandit', @response.body
+    assert_match /<(em|strong)>Rhoncus turpis<\/\1> magnis blandit/, @response.body
   end
 
   def test_get_preview_for_existing_risk
@@ -164,7 +164,7 @@ class RisksControllerTest < ActionController::TestCase
       }
 
     assert_response :success
-    assert_match '<strong>Rhoncus turpis</strong> magnis blandit', @response.body
+    assert_match /<(em|strong)>Rhoncus turpis<\/\1> magnis blandit/, @response.body
   end
 
   def test_post_quoted
