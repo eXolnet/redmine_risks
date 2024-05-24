@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        redmine: ["4.2", "5.0"]
+        redmine: ["4.2", "5.0", "5.1"]
         db: ["sqlite", "mysql", "postgresql"]
         include:
           - ruby: "2.7"
@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Execute tests
-        uses: eXolnet/action-redmine-plugin@v1
+        uses: eXolnet/action-redmine-plugin@v2
         with:
           plugin_name: "redmine_risks"
           redmine_version: "${{ matrix.redmine }}"
