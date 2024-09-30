@@ -17,11 +17,7 @@
       <% end %>
     </p>
 
-    <% if Redmine::VERSION.to_s >= '4.0' %>
-      <%= wikitoolbar_for 'risk_description', preview_new_risk_path(:project_id => @risk.project) %>
-    <% else %>
-      <%= wikitoolbar_for 'risk_description' %>
-    <% end %>
+    <%= wikitoolbar_for 'risk_description', preview_risk_path(:project_id => @risk.project) %>
   <% end %>
 
   <div id="attributes" class="attributes">
