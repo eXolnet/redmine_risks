@@ -1,6 +1,13 @@
 class Risk < ActiveRecord::Base
   include Redmine::SafeAttributes
 
+  include Redmine::Acts::Customizable
+ 
+  include Redmine::Acts::Searchable
+  include Redmine::Acts::Event
+  include Redmine::Acts::ActivityProvider
+  include Redmine::I18n
+
   belongs_to :project
   belongs_to :author, :class_name => 'User'
   belongs_to :assigned_to, :class_name => 'Principal'
@@ -37,8 +44,6 @@ class Risk < ActiveRecord::Base
   validates_inclusion_of :probability, :in => 0..100, :allow_nil => true
   validates_inclusion_of :impact, :in => 0..100, :allow_nil => true
   validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_nil => true
-
-  attr_protected :id if ActiveRecord::VERSION::MAJOR <= 4
 
   scope :open, lambda {|*args|
     is_closed = args.size > 0 ? !args.first : false
@@ -229,7 +234,7 @@ class Risk < ActiveRecord::Base
     index = (ratio * RISK_MAGNITUDE.count).clamp(0, RISK_MAGNITUDE.count - 1).to_i
     level = RISK_MAGNITUDE[index]
 
-    l(("label_risk_level_" + level).to_sym)
+    I18n.t(("label_risk_level_" + level).to_sym)
   end
 
   def init_journal(user, notes = "")
