@@ -13,8 +13,8 @@ risks_001:
   strategy: mitigate
   author_id: 1
   assigned_to_id: 1
-  created_on: <%= 3.days.ago.to_s(:db) %>
-  updated_on: <%= 3.days.ago.to_s(:db) %>
+  created_on: 2007-01-21 00:39:12 +01:00
+  updated_on: 2007-01-21 00:39:12 +01:00
 risks_002:
   id: 2
   project_id: 1
@@ -29,6 +29,6 @@ risks_002:
   strategy: transfer
   author_id: 1
   assigned_to_id: 1
-  created_on: <%= 3.days.ago.to_s(:db) %>
-  updated_on: <%= 3.days.ago.to_s(:db) %>
-  closed_on: <%= 3.days.ago.to_s(:db) %>
+  created_on: 2007-01-21 00:39:12 +01:00
+  updated_on: 2007-01-21 00:39:12 +01:00
+  closed_on: 2007-01-21 00:39:12 +01:00
