@@ -11,6 +11,7 @@ fr:
   field_strategy: Stratégie
   field_treatments: Actions
   field_lessons: Bilan
+  label_related_risks: Risques liés
   label_risk_status_open: Ouvert
   label_risk_status_closed: Fermé
   label_risk_status_rejected: Rejeté
@@ -41,3 +42,4 @@ fr:
   notice_risk_successful_update: "Risque mis à jour avec succès."
   notice_risk_successful_delete: "Risque supprimé avec succès."
   text_risks_destroy_confirmation: 'Etes vous sûr de vouloir supprimer le(s) risque(s) sélectionné(s)?'
+  project_module_risks: Gestion des risques
