@@ -2,3 +2,7 @@ risk_issue_001:
   id: 1
   risk_id: 1
   issue_id: 1
+risk_issue_002:
+  id: 2
+  risk_id: 2
+  issue_id: 3

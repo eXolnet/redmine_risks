@@ -11,6 +11,7 @@ en:
   field_strategy: Strategy
   field_treatments: Treatments
   field_lessons: Lessons learned
+  label_related_risks: Related risks
   label_risk_status_open: Open
   label_risk_status_closed: Closed
   label_risk_status_rejected: Rejected
@@ -41,3 +42,4 @@ en:
   notice_risk_successful_update: "Risk successfully updated."
   notice_risk_successful_delete: "Risk successfully deleted."
   text_risks_destroy_confirmation: 'Are you sure you want to delete the selected risk(s)?'
+  project_module_risks: Risk Management

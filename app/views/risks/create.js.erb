@@ -1,0 +1,14 @@
+<% if @risk %>
+  $('#new-risk-relation-form').autocomplete({
+        select: function(event, ui) {
+            $("hidden_selector").val(ui.item.term);
+            $(this).data("uiItem",ui.item.value);
+        },
+    }).bind("blur",function(){
+        $(this).val($(this).data("uiItem"));        
+    }).data("uiItem",$('#new-risk-relation-form').val());
+  hideModal();
+  $('#risk_id').focus();
+  $('#risk_id').val('<%= @risk.id %>');
+  $('#new_risk_on_issue').click();
+<% end %>
