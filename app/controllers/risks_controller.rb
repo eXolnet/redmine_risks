@@ -38,6 +38,7 @@ class RisksController < ApplicationController
   def new
     respond_to do |format|
       format.html { render :action => 'new', :layout => !request.xhr? }
+      format.js { render :action => 'new', :layout => !request.xhr? }
     end
   end
 
@@ -47,6 +48,7 @@ class RisksController < ApplicationController
     unless @risk.save
       return respond_to do |format|
         format.html { render :action => 'new' }
+        format.js { render :action => 'new' }
       end
     end
 
@@ -60,6 +62,7 @@ class RisksController < ApplicationController
           redirect_back_or_default risk_path(@risk)
         end
       }
+      format.js
     end
   end
 

@@ -41,3 +41,4 @@ pt:
   notice_risk_successful_update: "Risco alterado com sucesso."
   notice_risk_successful_delete: "Risco removido com sucesso"
   text_risks_destroy_confirmation: 'Deseja realmente deletar o(s) risco(s)?'
+  project_module_risks: Gerenciamento de riscos
