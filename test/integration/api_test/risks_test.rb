@@ -1,6 +1,10 @@
 require File.expand_path('../../../test_helper', __FILE__)
 
 class Redmine::ApiTest::RisksTest < Redmine::ApiTest::Base
+  fixtures :projects, :users, :email_addresses, :roles, :members, :member_roles,
+           :enabled_modules, :trackers, :projects_trackers, :issue_statuses,
+           :issues, :enumerations, :journals, :journal_details, :risks, :risk_issues
+
   RISK_PERMISSIONS = [:view_risks, :add_risks, :edit_risks, :delete_risks, :manage_risk_relations]
 
   def setup
