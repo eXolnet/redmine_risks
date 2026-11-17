@@ -5,7 +5,7 @@ match '/risks/preview/new/:project_id', :to => 'risks#preview', :as => 'preview_
 match '/risks/preview/edit/:id', :to => 'risks#preview', :as => 'preview_edit_risk', :via => [:get, :post, :put, :patch]
 post '/risks/:id/quoted', :to => 'risks#quoted', :id => /\d+/, :as => 'quoted_risk'
 
-match '/risks/context_menu', :to => 'context_menus#risks', :as => 'risks_context_menu', :via => [:get, :post]
+match '/risks/context_menu', :to => 'risk_context_menus#index', :as => 'risks_context_menu', :via => [:get, :post]
 
 resources :projects do
   resources :risks, :only => [:index, :new, :create]

@@ -1,6 +1,6 @@
 require File.expand_path('../../test_helper', __FILE__)
 
-class ContextMenuControllerTest < ActionController::TestCase
+class RiskContextMenusControllerTest < ActionController::TestCase
   fixtures :projects,
            :users,
            :roles,
@@ -13,8 +13,6 @@ class ContextMenuControllerTest < ActionController::TestCase
            :risk_issues
 
   def setup
-    @controller = ContextMenusController.new
-
     # Enable the Risks module on one project
     @project1 = Project.find(1)
     EnabledModule.create(:project => @project1, :name => 'risks')
@@ -24,7 +22,7 @@ class ContextMenuControllerTest < ActionController::TestCase
   end
 
   def test_get_risks_single
-    compatible_request :get, :risks, :ids => [1]
+    compatible_request :get, :index, :ids => [1]
 
     assert_response :success
     assert_match 'Impact', @response.body
@@ -33,7 +31,7 @@ class ContextMenuControllerTest < ActionController::TestCase
   end
 
   def test_get_risks_many
-    compatible_request :get, :risks, :ids => [1, 2]
+    compatible_request :get, :index, :ids => [1, 2]
 
     assert_response :success
     assert_match 'Impact', @response.body
