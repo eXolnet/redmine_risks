@@ -1,6 +1,7 @@
 require File.expand_path('../../test_helper', __FILE__)
 
 class RiskTest < ActiveSupport::TestCase
+  fixtures :projects, :users, :enabled_modules, :enumerations, :risks
 
   def test_magnitude_calculation
     assert_equal "Low", Risk.new(:probability => 100, :impact => 0).magnitude
