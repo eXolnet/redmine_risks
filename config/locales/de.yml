@@ -40,4 +40,5 @@ de:
   notice_risk_successful_create: "Risiko erfolgreich erstellt."
   notice_risk_successful_update: "Risiko erfolgreich aktualisiert."
   notice_risk_successful_delete: "Riskio erfolgreich gelöscht."
+  error_risk_issue_not_linkable: "Die Aufgabe kann nicht mit diesem Risiko verknüpft werden."
   text_risks_destroy_confirmation: 'Ausgewählte Risiko(s) wirklich löschen?'

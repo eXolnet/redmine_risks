@@ -46,7 +46,47 @@ This plugin version is compatible only with Redmine 6.0 and later.
 
 ## Usage
 
-Explain how to use your package.
+Enable the "Risks" module on a project and grant the risk permissions (view, add, edit, delete and manage relations) to the appropriate roles.
+
+### REST API
+
+When the REST API is enabled (*Administration » Settings » API*), risks can be managed with the same authentication methods as the core Redmine API (API key, HTTP Basic). Every endpoint supports the `json` and `xml` formats.
+
+| Method | Endpoint | Description | Permission |
+|---|---|---|---|
+| `GET` | `/projects/:project_id/risks.json` | List the risks of a project | View risks |
+| `POST` | `/projects/:project_id/risks.json` | Create a risk | Add risks |
+| `GET` | `/risks/:id.json` | Show a risk | View risks |
+| `PUT` | `/risks/:id.json` | Update a risk | Edit risks |
+| `DELETE` | `/risks/:id.json` | Delete a risk | Delete risks |
+| `POST` | `/risks/:id/issues.json` | Link an issue (`issue_id` parameter) | Manage risk relations |
+| `DELETE` | `/risks/:id/issues/:issue_id.json` | Unlink an issue | Manage risk relations |
+| `GET` | `/enumerations/risk_categories.json` | List the risk categories | — |
+
+**Listing** accepts the usual query parameters: `offset`, `limit`, `sort` (eg. `sort=magnitude:desc,id`) and filters such as `status` (`open` by default; use `status=open|closed|rejected` to get every risk), `assigned_to_id`, `author_id`, `category_id` or `strategy`.
+
+**Showing** accepts `include=issues,journals` to add the linked issues and the history.
+
+**Creating or updating** expects a `risk` object with the following attributes:
+
+| Attribute | Description |
+|---|---|
+| `subject` | Required on creation |
+| `description`, `treatments`, `lessons` | Free text |
+| `category_id` | ID of a risk category |
+| `assigned_to_id` | ID of a user or group |
+| `probability`, `impact` | Integer from 0 to 100 (25-point steps match the UI levels) |
+| `strategy` | `accept`, `mitigate`, `transfer` or `eliminate` |
+| `status` | `open`, `closed` or `rejected` (update only) |
+| `notes`, `private_notes` | Journal notes (update only) |
+
+Example:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -H "X-Redmine-API-Key: $KEY" \
+  -d '{"risk": {"subject": "Key supplier delay", "probability": 50, "impact": 75, "strategy": "mitigate"}}' \
+  https://redmine.example.com/projects/my-project/risks.json
+```
 
 ## Testing
 

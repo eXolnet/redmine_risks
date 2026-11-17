@@ -44,6 +44,30 @@ module RisksHelper
     l("label_risk_strategy_#{strategy}")
   end
 
+  # Renders the common attributes of a risk for the REST API
+  def render_api_risk(risk, api)
+    api.id risk.id
+    api.project(:id => risk.project_id, :name => risk.project.name) unless risk.project.nil?
+    api.subject risk.subject
+    api.description risk.description
+    api.status risk.status
+    api.category(:id => risk.category_id, :name => risk.category.name) unless risk.category.nil?
+    api.probability risk.probability
+    api.impact risk.impact
+    api.magnitude risk.magnitude
+    api.strategy risk.strategy
+    api.treatments risk.treatments
+    api.lessons risk.lessons
+    api.author(:id => risk.author_id, :name => risk.author.name) unless risk.author.nil?
+    api.assigned_to(:id => risk.assigned_to_id, :name => risk.assigned_to.name) unless risk.assigned_to.nil?
+
+    render_api_custom_values risk.visible_custom_field_values, api
+
+    api.created_on risk.created_on
+    api.updated_on risk.updated_on
+    api.closed_on risk.closed_on
+  end
+
   def format_risk_level(levels, level, &block)
     return if level.nil?
 

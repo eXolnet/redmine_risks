@@ -7,6 +7,8 @@ class RisksController < ApplicationController
   before_action :find_optional_project, :only => [:index, :new, :create]
   before_action :build_new_risk_from_params, :only => [:new, :create]
 
+  accept_api_auth :index, :show, :create, :update, :destroy
+
   rescue_from Query::StatementInvalid, :with => :query_statement_invalid
 
   helper :journals
@@ -25,10 +27,16 @@ class RisksController < ApplicationController
           @risks = @query.risks(:offset => @risk_pages.offset, :limit => @risk_pages.per_page)
           render :layout => !request.xhr?
         }
+        format.api {
+          @offset, @limit = api_offset_and_limit
+          @risk_count = @query.risk_count
+          @risks = @query.risks(:offset => @offset, :limit => @limit, :include => [:author, :assigned_to])
+        }
       end
     else
       respond_to do |format|
         format.html { render :layout => !request.xhr? }
+        format.api  { render_validation_errors(@query) }
       end
     end
   rescue ActiveRecord::RecordNotFound
@@ -47,6 +55,7 @@ class RisksController < ApplicationController
     unless @risk.save
       return respond_to do |format|
         format.html { render :action => 'new' }
+        format.api  { render_validation_errors(@risk) }
       end
     end
 
@@ -59,6 +68,9 @@ class RisksController < ApplicationController
         else
           redirect_back_or_default risk_path(@risk)
         end
+      }
+      format.api {
+        render :action => 'show', :status => :created, :location => risk_url(@risk)
       }
     end
   end
@@ -74,6 +86,7 @@ class RisksController < ApplicationController
       format.html {
         render :template => 'risks/show'
       }
+      format.api
     end
   end
 
@@ -101,7 +114,7 @@ class RisksController < ApplicationController
     end
 
     if saved
-      flash[:notice] = l(:notice_risk_successful_update) unless @risk.current_journal.new_record?
+      flash[:notice] = l(:notice_risk_successful_update) unless api_request? || @risk.current_journal.new_record?
 
       respond_to do |format|
         format.html { redirect_back_or_default risk_path(@risk) }
@@ -126,7 +139,7 @@ class RisksController < ApplicationController
       end
     end
 
-    flash[:notice] = l(:notice_risk_successful_delete)
+    flash[:notice] = l(:notice_risk_successful_delete) unless api_request?
 
     respond_to do |format|
       format.html { redirect_back_or_default(@project ? project_risks_path(@project) : nil) }

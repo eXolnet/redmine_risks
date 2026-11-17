@@ -40,4 +40,5 @@ zh-TW:
   notice_risk_successful_create: "風險已建立"
   notice_risk_successful_update: "更新成功"
   notice_risk_successful_delete: "刪除成功"
+  error_risk_issue_not_linkable: "無法將此議題關聯至此風險。"
   text_risks_destroy_confirmation: '確定刪除已選擇的風險？'
