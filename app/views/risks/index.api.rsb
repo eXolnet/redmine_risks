@@ -1,0 +1,7 @@
+api.array :risks, api_meta(:total_count => @risk_count, :offset => @offset, :limit => @limit) do
+  @risks.each do |risk|
+    api.risk do
+      render_api_risk(risk, api)
+    end
+  end
+end

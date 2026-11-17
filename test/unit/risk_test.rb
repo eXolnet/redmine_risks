@@ -1,6 +1,7 @@
 require File.expand_path('../../test_helper', __FILE__)
 
 class RiskTest < ActiveSupport::TestCase
+  fixtures :projects, :users, :enabled_modules, :enumerations, :risks
 
   def test_magnitude_calculation
     assert_equal "Low", Risk.new(:probability => 100, :impact => 0).magnitude
@@ -28,4 +29,30 @@ class RiskTest < ActiveSupport::TestCase
     assert_equal "Extreme", Risk.new(:probability => 100, :impact => 100).magnitude
   end
 
+  def test_assigning_closed_status_should_set_closed_on
+    risk = Risk.find(1)
+    risk.status = 'closed'
+    risk.save!
+
+    assert_not_nil risk.reload.closed_on
+    assert risk.closed?
+  end
+
+  def test_assigning_open_status_should_clear_closed_on
+    risk = Risk.find(2)
+    risk.status = 'open'
+    risk.save!
+
+    assert_nil risk.reload.closed_on
+    assert_not risk.closed?
+  end
+
+  def test_switching_between_closed_statuses_should_keep_closed_on
+    risk = Risk.find(2)
+    closed_on = risk.closed_on
+    risk.status = 'rejected'
+    risk.save!
+
+    assert_equal closed_on, risk.reload.closed_on
+  end
 end

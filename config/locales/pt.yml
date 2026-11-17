@@ -40,4 +40,5 @@ pt:
   notice_risk_successful_create: "Risco criado com sucesso."
   notice_risk_successful_update: "Risco alterado com sucesso."
   notice_risk_successful_delete: "Risco removido com sucesso"
+  error_risk_issue_not_linkable: "A tarefa não pode ser associada a este risco."
   text_risks_destroy_confirmation: 'Deseja realmente deletar o(s) risco(s)?'

@@ -40,4 +40,5 @@ en:
   notice_risk_successful_create: "Risk successfully created."
   notice_risk_successful_update: "Risk successfully updated."
   notice_risk_successful_delete: "Risk successfully deleted."
+  error_risk_issue_not_linkable: "The issue cannot be linked to this risk."
   text_risks_destroy_confirmation: 'Are you sure you want to delete the selected risk(s)?'

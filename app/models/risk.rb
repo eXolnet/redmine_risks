@@ -227,6 +227,19 @@ class Risk < ActiveRecord::Base
     super(attrs, user)
   end
 
+  # Returns the custom_field_values that can be edited by the given user
+  def editable_custom_field_values(user=nil)
+    visible_custom_field_values(user)
+  end
+
+  # Returns the custom_field_values that are visible to the given user
+  def visible_custom_field_values(user=nil)
+    user ||= User.current
+    custom_field_values.select do |value|
+      value.custom_field.visible_by?(project, user)
+    end
+  end
+
   def magnitude
     return unless probability && impact
 
@@ -446,6 +459,16 @@ class Risk < ActiveRecord::Base
   # The closed_on attribute stores the time of the last closing
   # and is preserved when the issue is reopened.
   def update_closed_on
+    # Keep closed_on in sync when the status is assigned directly (eg. from a
+    # form or the REST API) instead of going through a state machine event.
+    if status_changed? && !closed_on_changed?
+      if %w(closed rejected).include?(status)
+        self.closed_on ||= updated_on
+      else
+        self.closed_on = nil
+      end
+    end
+
     if closing?
       self.closed_on = updated_on
     end
