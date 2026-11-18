@@ -7,7 +7,7 @@
                             :class => 'icon icon-edit',
                             :disabled => !@can[:edit] %>
     <% else -%>
-      <%= context_menu_link sprite_icon('edit', l(:button_edit)), bulk_edit_risks_path(:ids => @risk_ids, :back_url => @back),
+      <%= context_menu_link sprite_icon('edit', l(:label_bulk_edit)), bulk_edit_risks_path(:ids => @risk_ids, :back_url => @back),
                             :class => 'icon icon-edit',
                             :disabled => !@can[:edit] %>
     <% end -%>

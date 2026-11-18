@@ -44,7 +44,7 @@ class RiskContextMenusControllerTest < ActionController::TestCase
 
     assert_response :success
     assert_select 'a.icon-edit:not(.disabled)[href=?]',
-                  '/risks/bulk_edit?back_url=%2Fprojects%2Fecookbook%2Frisks&ids%5B%5D=1&ids%5B%5D=2'
+                  '/risks/bulk_edit?back_url=%2Fprojects%2Fecookbook%2Frisks&ids%5B%5D=1&ids%5B%5D=2', :text => 'Bulk edit'
   end
 
   def test_get_risks_many_without_edit_permission_should_disable_edit
@@ -75,7 +75,7 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     compatible_request :get, :index, :ids => [1], :back_url => '/projects/ecookbook/risks'
 
     assert_response :success
-    assert_select 'a.icon-edit:not(.disabled)[href=?]', '/risks/1/edit'
+    assert_select 'a.icon-edit:not(.disabled)[href=?]', '/risks/1/edit', :text => 'Edit'
     assert_select 'a.submenu', :text => 'Status'
     current = Risk.find(1).status
     assert_select 'a.disabled', :text => I18n.t("label_risk_status_#{current}")
