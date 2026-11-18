@@ -565,7 +565,6 @@ class RiskTest < ActiveSupport::TestCase
     assert_equal updated_on, risk.reload.updated_on
   end
 
-
   def test_required_custom_field_should_be_validated
     field = RiskCustomField.create!(:name => 'Mandatory', :field_format => 'string', :is_required => true)
     risk = Risk.new(:project_id => 1, :author_id => 1, :subject => 'Risk with custom field')
@@ -630,5 +629,67 @@ class RiskTest < ActiveSupport::TestCase
     assert_difference 'CustomValue.where(:customized_type => "Risk").count', -1 do
       risk.destroy
     end
+  end
+
+  def test_copy_from_should_copy_attributes
+    User.current = User.find(2)
+    source = Risk.find(2)
+    risk = Risk.new(:project => Project.find(1)).copy_from(source)
+
+    assert risk.copy?
+    assert_equal source, risk.copied_from
+    %w(subject description treatments lessons category_id probability impact strategy assigned_to_id).each do |attribute|
+      assert_equal source.send(attribute), risk.send(attribute), "#{attribute} was not copied"
+    end
+    assert_equal Project.find(1), risk.project
+  end
+
+  def test_copy_from_should_create_an_open_risk_authored_by_current_user
+    User.current = User.find(2)
+    source = Risk.find(2) # closed risk authored by admin
+    risk = Risk.new(:project => Project.find(1)).copy_from(source)
+
+    assert risk.save
+    risk.reload
+    assert_equal 'open', risk.status
+    assert_nil risk.closed_on
+    assert_equal User.find(2), risk.author
+    assert_not_equal source.created_on, risk.created_on
+  end
+
+  def test_copy_from_should_copy_related_issues_by_default
+    User.current = User.find(1)
+    risk = Risk.new(:project => Project.find(1)).copy_from(Risk.find(1))
+
+    assert risk.save
+    assert_equal [1], risk.reload.issue_ids
+    assert_equal [1], Risk.find(1).issue_ids
+  end
+
+  def test_copy_from_without_issues_should_not_copy_related_issues
+    User.current = User.find(1)
+    risk = Risk.new(:project => Project.find(1)).copy_from(Risk.find(1), :issues => false)
+
+    assert risk.save
+    assert_equal [], risk.reload.issue_ids
+  end
+
+  def test_copy_from_should_copy_custom_field_values
+    User.current = User.find(1)
+    source = Risk.find(1)
+    source.stubs(:custom_field_values).returns([stub(:custom_field_id => 7, :value => 'Hosting')])
+    risk = Risk.new(:project => Project.find(1))
+    risk.expects(:custom_field_values=).with({7 => 'Hosting'})
+
+    risk.copy_from(source)
+  end
+
+  def test_copy_should_return_an_unsaved_copy
+    User.current = User.find(1)
+    risk = Risk.find(1).copy(:subject => 'Copied')
+
+    assert risk.new_record?
+    assert_equal 'Copied', risk.subject
+    assert_equal Project.find(1), risk.project
   end
 end

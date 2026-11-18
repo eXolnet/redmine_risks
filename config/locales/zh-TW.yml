@@ -4,6 +4,7 @@ zh-TW:
   label_risk:  "風險"
   label_risk_plural: "風險"
   label_new_risk: "建立新風險"
+  label_copy_risk_issues: "複製相關的議題"
   label_risk_id: '#'
   field_probability: "發生機率"
   field_impact: "影響程度"

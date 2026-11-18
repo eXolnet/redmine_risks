@@ -1,3 +1,4 @@
+require File.dirname(__FILE__) + '/redmine_risks/export/pdf/risks_pdf_helper'
 require File.dirname(__FILE__) + '/redmine_risks/patches/application_helper_patch'
 require File.dirname(__FILE__) + '/redmine_risks/patches/journal_patch'
 require File.dirname(__FILE__) + '/redmine_risks/patches/issue_patch'

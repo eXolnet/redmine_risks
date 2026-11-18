@@ -10,6 +10,18 @@ class RisksHelperTest < Redmine::HelperTest
            :enabled_modules, :trackers, :projects_trackers, :issue_statuses,
            :issues, :enumerations, :journals, :journal_details, :risks, :risk_issues
 
+  def test_csv_value_should_translate_risk_values
+    risk = Risk.find(1)
+
+    assert_equal 'Low', csv_value(QueryColumn.new(:probability), risk, 25)
+    assert_equal 'Moderate', csv_value(QueryColumn.new(:impact), risk, 50)
+    assert_equal 'Open', csv_value(QueryColumn.new(:status), risk, 'open')
+    assert_equal 'Mitigate', csv_value(QueryColumn.new(:strategy), risk, 'mitigate')
+    assert_equal '', csv_value(QueryColumn.new(:probability), risk, nil)
+    assert_equal '', csv_value(QueryColumn.new(:strategy), risk, nil)
+    assert_equal 'Sit sodales posuere', csv_value(QueryColumn.new(:subject), risk, 'Sit sodales posuere')
+  end
+
   def test_format_risk_status
     assert_equal 'Open', format_risk_status('open')
     assert_equal 'Closed', format_risk_status('closed')

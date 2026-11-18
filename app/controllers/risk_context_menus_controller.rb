@@ -16,7 +16,8 @@ class RiskContextMenusController < ApplicationController
 
     @can = {
       :edit => @risks.all? {|t| t.editable?(User.current)},
-      :delete => @risks.all? {|t| t.deletable?(User.current)}
+      :delete => @risks.all? {|t| t.deletable?(User.current)},
+      :copy => @risk.present? && User.current.allowed_to?(:add_risks, @risk.project)
     }
     @back = back_url
 

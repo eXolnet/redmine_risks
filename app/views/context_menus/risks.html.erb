@@ -144,6 +144,11 @@
 
   <% if @risk -%>
     <li><%= copy_object_url_link(risk_url(@risk)) %></li>
+    <li>
+      <%= context_menu_link sprite_icon('copy', l(:button_copy)), project_copy_risk_path(@risk.project, @risk),
+                            :class => 'icon icon-copy',
+                            :disabled => !@can[:copy] %>
+    </li>
   <% elsif @projects.size == 1 -%>
     <li><%= copy_object_url_link(project_risks_url(@projects.first, :set_filter => 1, :risk_id => @risk_ids.join(','))) %></li>
   <% end -%>

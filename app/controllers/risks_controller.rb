@@ -7,6 +7,7 @@ class RisksController < ApplicationController
   before_action :find_optional_project, :only => [:index, :new, :create]
   before_action :build_new_risk_from_params, :only => [:new, :create]
 
+  accept_atom_auth :index, :show
   accept_api_auth :index, :show, :create, :update, :destroy
 
   rescue_from Query::StatementInvalid, :with => :query_statement_invalid
@@ -14,10 +15,11 @@ class RisksController < ApplicationController
   helper :journals
   helper :projects
   helper :custom_fields
+  helper :queries
   include RisksHelper
 
   def index
-    retrieve_query(RiskQuery)
+    retrieve_query(RiskQuery, !request.format.csv?)
 
     if @query.valid?
       respond_to do |format|
@@ -32,10 +34,24 @@ class RisksController < ApplicationController
           @risk_count = @query.risk_count
           @risks = @query.risks(:offset => @offset, :limit => @limit, :include => [:author, :assigned_to])
         }
+        format.atom {
+          risks = @query.risks(:limit => Setting.feeds_limit.to_i)
+          render_feed(risks, :title => "#{@project || Setting.app_title}: #{l(:label_risks)}")
+        }
+        format.csv {
+          risks = @query.risks(:limit => Setting.issues_export_limit.to_i)
+          send_data(query_to_csv(risks, @query, params[:csv]),
+                    :type => 'text/csv; header=present', :filename => "#{filename_for_export(@query, 'risks')}.csv")
+        }
+        format.pdf {
+          @risks = @query.risks(:limit => Setting.issues_export_limit.to_i)
+          send_file_headers! :type => 'application/pdf', :filename => "#{filename_for_export(@query, 'risks')}.pdf"
+        }
       end
     else
       respond_to do |format|
         format.html { render :layout => !request.xhr? }
+        format.any(:atom, :csv, :pdf) { head :unprocessable_content }
         format.api  { render_validation_errors(@query) }
       end
     end
@@ -87,6 +103,12 @@ class RisksController < ApplicationController
         render :template => 'risks/show'
       }
       format.api
+      format.atom {
+        render :layout => false, :content_type => 'application/atom+xml'
+      }
+      format.pdf {
+        send_file_headers! :type => 'application/pdf', :filename => "#{@project.identifier}-risk-#{@risk.id}.pdf"
+      }
     end
   end
 
@@ -214,13 +236,35 @@ class RisksController < ApplicationController
 
   private
 
+  # The new risk will be copied from an existing one if copy_from parameter is given
   def build_new_risk_from_params
     @risk = Risk.new
     @risk.project = @project
+
+    if params[:copy_from].present?
+      begin
+        @copy_from = Risk.find(params[:copy_from])
+      rescue ActiveRecord::RecordNotFound
+        render_404
+        return
+      end
+
+      raise ::Unauthorized unless @copy_from.visible?
+
+      @copy_issues = params[:copy_issues].present? || request.get?
+      @risk.copy_from(@copy_from, :issues => @copy_issues)
+    end
+
     @risk.author ||= User.current
 
     attrs = (params[:risk] || {}).deep_dup
-    attrs.delete_if {|k,v| v.blank?}
+
+    if @copy_from
+      # Fields cleared in the copy form must not fall back to the source values
+      attrs.transform_values! {|v| v.blank? ? nil : v}
+    else
+      attrs.delete_if {|k,v| v.blank?}
+    end
 
     @risk.safe_attributes = attrs
   end
