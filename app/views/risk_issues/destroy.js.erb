@@ -1,1 +1,3 @@
-$('#relation-<%= @issue.id %>').remove();
+<% if @issue %>
+  $('#relation-<%= @issue.id %>').remove();
+<% end %>

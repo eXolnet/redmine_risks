@@ -9,7 +9,7 @@ module RedmineRisks
 
       module InstanceMethods
         def link_to_risk(risk, options={})
-          text = options.delete(:text) || risk.summary
+          text = options.delete(:text) || risk.subject
 
           link_to(h(text), {:controller => 'risks', :action => 'show', :id => risk}, :title => text)
         end

@@ -38,4 +38,63 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_match 'Probability', @response.body
     assert_match 'Strategy', @response.body
   end
+
+  def test_get_risks_single_should_list_menu_entries
+    category = RiskCategory.create!(:name => 'Technical')
+
+    compatible_request :get, :index, :ids => [1], :back_url => '/projects/ecookbook/risks'
+
+    assert_response :success
+    assert_select 'a.icon-del:not(.disabled)[href=?]', '/risks?back_url=%2Fprojects%2Fecookbook%2Frisks&ids%5B%5D=1'
+    assert_select 'a[href*=?]', "risk%5Bcategory_id%5D=#{category.id}", :text => 'Technical'
+    assert_select 'a[href*=?]', 'risk%5Bstrategy%5D=accept'
+    assert_select 'a.disabled', :text => 'Mitigate'
+    assert_select 'a[href*=?]', 'risk%5Bassigned_to_id%5D=2', :text => 'John Smith'
+  end
+
+  def test_get_risks_with_unknown_ids_should_respond_404
+    compatible_request :get, :index, :ids => [999]
+
+    assert_response 404
+  end
+
+  def test_get_risks_without_view_permission_should_be_denied
+    @request.session[:user_id] = 4 # Not a member of project 1
+
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response 403
+    assert_no_match 'Sit sodales posuere', @response.body
+  end
+
+  def test_get_risks_as_anonymous_should_require_login
+    @request.session[:user_id] = nil
+
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response 302
+    assert_match %r{/login}, @response.location
+  end
+
+  def test_get_risks_with_edit_but_without_delete_permission
+    Role.find(1).add_permission!(:view_risks, :edit_risks)
+    @request.session[:user_id] = 2 # jsmith, Manager on project 1
+
+    compatible_request :get, :index, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'a[href*=?]:not(.disabled)', 'risk%5Bstrategy%5D=accept'
+    assert_select 'a.icon-del.disabled'
+  end
+
+  def test_get_risks_without_edit_permission_should_disable_links
+    Role.find(1).add_permission!(:view_risks)
+    @request.session[:user_id] = 2
+
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response :success
+    assert_select 'a.icon-del.disabled'
+    assert_select 'a[href*=?]', 'risk%5Bstrategy%5D', 0
+  end
 end

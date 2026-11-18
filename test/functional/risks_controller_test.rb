@@ -25,12 +25,15 @@ class RisksControllerTest < ActionController::TestCase
     compatible_request :get, :index, :project_id => 'ecookbook'
 
     assert_response :success
+    assert_select 'table.risks tr#risk-1'
+    assert_select 'table.risks tr#risk-2', 0 # closed risks are filtered out by default
   end
 
   def test_get_new
     compatible_request :get, :new, :project_id => 'ecookbook'
 
     assert_response :success
+    assert_select 'form#risk-form[action=?]', '/projects/ecookbook/risks'
   end
 
   def test_post_create
@@ -61,12 +64,14 @@ class RisksControllerTest < ActionController::TestCase
     compatible_request :get, :show, :id => 1
 
     assert_response :success
+    assert_select 'div.subject h3', :text => 'Sit sodales posuere'
   end
 
   def test_get_edit
     compatible_request :get, :edit, :id => 1
 
     assert_response :success
+    assert_select 'input[name=?][value=?]', 'risk[subject]', 'Sit sodales posuere'
   end
 
   def test_put_update
@@ -193,5 +198,26 @@ class RisksControllerTest < ActionController::TestCase
     assert_equal 75, risk2.probability
     assert_equal 100, risk2.impact
     assert_equal 'eliminate', risk2.strategy
+  end
+
+  def test_delete_destroy_risks_of_several_projects
+    EnabledModule.create!(:project_id => 3, :name => 'risks')
+    risk = Risk.create!(:project_id => 3, :subject => 'Subproject risk', :author_id => 1)
+
+    compatible_request :delete, :destroy, :ids => [1, risk.id]
+
+    assert_redirected_to '/'
+    assert_nil Risk.find_by_id(1)
+    assert_nil Risk.find_by_id(risk.id)
+  end
+
+  def test_post_bulk_update_risks_of_several_projects
+    EnabledModule.create!(:project_id => 3, :name => 'risks')
+    risk = Risk.create!(:project_id => 3, :subject => 'Subproject risk', :author_id => 1)
+
+    compatible_request :post, :bulk_update, :ids => [1, risk.id], :risk => {:strategy => 'accept'}
+
+    assert_redirected_to '/'
+    assert_equal ['accept'], Risk.where(:id => [1, risk.id]).distinct.pluck(:strategy)
   end
 end

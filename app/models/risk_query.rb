@@ -224,7 +224,7 @@ class RiskQuery < Query
           " LEFT OUTER JOIN #{User.table_name} last_journal_user ON last_journal_user.id = #{Journal.table_name}.user_id";
       end
       if order_options.include?('enumerations')
-        joins << "LEFT OUTER JOIN #{RiskCategory.table_name} ON #{RiskCategory.table_name}.id = #{queried_table_name}.priority_id"
+        joins << "LEFT OUTER JOIN #{RiskCategory.table_name} ON #{RiskCategory.table_name}.id = #{queried_table_name}.category_id"
       end
     end
 
