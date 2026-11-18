@@ -1,0 +1,50 @@
+<% risks = @issue.visible_risks.to_a unless local_assigns.key?(:risks) %>
+<% add_allowed = User.current.allowed_to?(:manage_risk_relations, nil, :global => true) %>
+
+<div class="contextual">
+  <% if add_allowed %>
+    <%= toggle_link l(:button_add), 'new-issue-risk-form', {:focus => 'risk_id'} %>
+  <% end %>
+</div>
+
+<p>
+  <strong><%= l(:label_related_risks) %></strong>
+  <%= render :partial => 'issues/risks_stats', :locals => {:risks => risks} if risks.any? %>
+</p>
+
+<% if risks.any? %>
+<table class="list risks odd-even">
+  <% risks.each do |risk| %>
+  <tr id="issue-risk-<%= risk.id %>" class="<%= risk.css_classes %>">
+    <td class="subject"><%= link_to "#{l(:label_risk)} ##{risk.id}", risk_path(risk), :title => risk.subject %>: <%= risk.subject %></td>
+    <td class="status"><%= l("label_risk_status_#{risk.status}") if risk.status.present? %></td>
+    <td class="magnitude"><%= risk.magnitude %></td>
+    <td class="assigned_to"><%= link_to_principal(risk.assigned_to) if risk.assigned_to %></td>
+    <td class="strategy"><%= l("label_risk_strategy_#{risk.strategy}") if Risk::RISK_STRATEGY.include?(risk.strategy) %></td>
+    <td class="buttons">
+      <% if User.current.allowed_to?(:manage_risk_relations, risk.project) %>
+        <%= link_to(sprite_icon('link-break', l(:label_relation_delete)),
+                    issue_risk_path(@issue, risk),
+                    :remote => true,
+                    :method => :delete,
+                    :data => {:confirm => l(:text_are_you_sure)},
+                    :title => l(:label_relation_delete),
+                    :class => 'icon-only icon-link-break') %>
+      <% end %>
+    </td>
+  </tr>
+  <% end %>
+</table>
+<% end %>
+
+<% if add_allowed %>
+  <%= form_tag(issue_risks_path(@issue),
+               :remote => true,
+               :method => :post,
+               :id => 'new-issue-risk-form',
+               :style => 'display: none;') do %>
+    <%= l(:label_risk) %> #<%= text_field_tag 'risk_id', '', :size => 10 %>
+    <%= submit_tag l(:button_add) %>
+    <%= toggle_link l(:button_cancel), 'new-issue-risk-form' %>
+  <% end %>
+<% end %>

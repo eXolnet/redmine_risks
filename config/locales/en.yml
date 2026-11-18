@@ -9,6 +9,7 @@ en:
   field_impact: Impact
   field_magnitude: Magnitude
   field_strategy: Strategy
+  field_related_issue: "Related issue"
   field_treatments: Treatments
   field_lessons: Lessons learned
   label_risk_status_open: Open
@@ -41,4 +42,14 @@ en:
   notice_risk_successful_update: "Risk successfully updated."
   notice_risk_successful_delete: "Risk successfully deleted."
   error_risk_issue_not_linkable: "The issue cannot be linked to this risk."
+  error_risk_not_linkable: "The risk cannot be linked to this issue."
+  label_related_risks: "Related risks"
+  label_x_open_risks_abbr:
+    zero: "0 open"
+    one: "1 open"
+    other: "%{count} open"
+  label_x_closed_risks_abbr:
+    zero: "0 closed"
+    one: "1 closed"
+    other: "%{count} closed"
   text_risks_destroy_confirmation: 'Are you sure you want to delete the selected risk(s)?'

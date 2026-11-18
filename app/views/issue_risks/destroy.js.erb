@@ -1,0 +1,5 @@
+<% if @risk %>
+  $('#issue-risks').html('<%= escape_javascript(render :partial => "issues/risks_list") %>');
+<% else %>
+  alert("<%= raw(escape_javascript(l(:error_risk_not_linkable))) %>");
+<% end %>

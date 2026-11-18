@@ -1,5 +1,7 @@
 require File.dirname(__FILE__) + '/redmine_risks/patches/application_helper_patch'
 require File.dirname(__FILE__) + '/redmine_risks/patches/journal_patch'
+require File.dirname(__FILE__) + '/redmine_risks/patches/issue_patch'
+require File.dirname(__FILE__) + '/redmine_risks/hooks/views_issues_hook'
 
 # Force load the subclasses in development mode
 require_dependency File.dirname(__FILE__) + '/../app/models/risk_category'

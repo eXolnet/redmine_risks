@@ -1,0 +1,7 @@
+<% if @risk %>
+  $('#issue-risks').html('<%= escape_javascript(render :partial => "issues/risks_list") %>');
+  $('#issue-risk-<%= @risk.id %>').effect("highlight");
+  $('#risk_id').focus();
+<% else %>
+  alert("<%= raw(escape_javascript(l(:error_risk_not_linkable))) %>");
+<% end %>

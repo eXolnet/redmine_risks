@@ -1,0 +1,9 @@
+<% if @issue.present? && @issue.persisted? && (risks = @issue.visible_risks.to_a).any? %>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'risks', :plugin => 'redmine_risks' %>
+<% end %>
+<hr />
+<div id="issue-risks">
+  <%= render :partial => 'issues/risks_list', :locals => {:risks => risks} %>
+</div>
+<% end %>

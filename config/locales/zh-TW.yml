@@ -9,6 +9,7 @@ zh-TW:
   field_impact: "影響程度"
   field_magnitude: "強度"
   field_strategy: "策略"
+  field_related_issue: "相關議題"
   field_treatments: "處理方式"
   field_lessons: "經驗傳承"
   label_risk_status_open: Open
@@ -41,4 +42,14 @@ zh-TW:
   notice_risk_successful_update: "更新成功"
   notice_risk_successful_delete: "刪除成功"
   error_risk_issue_not_linkable: "無法將此議題關聯至此風險。"
+  error_risk_not_linkable: "無法將此風險關聯至此議題。"
+  label_related_risks: "相關風險"
+  label_x_open_risks_abbr:
+    zero: "0 進行中"
+    one: "1 進行中"
+    other: "%{count} 進行中"
+  label_x_closed_risks_abbr:
+    zero: "0 已結束"
+    one: "1 已結束"
+    other: "%{count} 已結束"
   text_risks_destroy_confirmation: '確定刪除已選擇的風險？'

@@ -202,4 +202,18 @@ class RiskQueryTest < ActiveSupport::TestCase
     assert_raise(Query::StatementInvalid) { query.risks }
     assert_raise(Query::StatementInvalid) { query.risk_count }
   end
+
+  def test_filters_and_columns_should_be_translated
+    %w(en fr de pt-BR pt zh-TW).each do |locale|
+      ::I18n.with_locale(locale) do
+        query = build_query
+        labels = query.available_filters.values.map {|f| f[:name].to_s } +
+                 query.available_columns.map {|c| c.caption.to_s }
+
+        labels.each do |label|
+          assert_not_include "Translation missing", label, "Missing translation for #{locale}"
+        end
+      end
+    end
+  end
 end

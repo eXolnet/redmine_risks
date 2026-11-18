@@ -9,6 +9,7 @@ pt-BR:
   field_impact: Impacto
   field_magnitude: Magnitude
   field_strategy: Stratégia
+  field_related_issue: "Tarefa relacionada"
   field_treatments: Tratamentos
   field_lessons: Lições aprendidas
   label_risk_status_open: Aberto
@@ -41,4 +42,14 @@ pt-BR:
   notice_risk_successful_update: "Risco alterado com sucesso."
   notice_risk_successful_delete: "Risco removido com sucesso"
   error_risk_issue_not_linkable: "A tarefa não pode ser vinculada a este risco."
+  error_risk_not_linkable: "O risco não pode ser vinculado a esta tarefa."
+  label_related_risks: "Riscos relacionados"
+  label_x_open_risks_abbr:
+    zero: "0 aberto"
+    one: "1 aberto"
+    other: "%{count} abertos"
+  label_x_closed_risks_abbr:
+    zero: "0 fechado"
+    one: "1 fechado"
+    other: "%{count} fechados"
   text_risks_destroy_confirmation: 'Deseja realmente deletar o(s) risco(s)?'
