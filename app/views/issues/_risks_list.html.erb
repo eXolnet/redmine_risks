@@ -13,9 +13,11 @@
 </p>
 
 <% if risks.any? %>
+<%= form_tag({}, :data => {:cm_url => risks_context_menu_path}) do %>
 <table class="list risks odd-even">
   <% risks.each do |risk| %>
-  <tr id="issue-risk-<%= risk.id %>" class="<%= risk.css_classes %>">
+  <tr id="issue-risk-<%= risk.id %>" class="hascontextmenu <%= risk.css_classes %>">
+    <td class="checkbox"><%= check_box_tag 'ids[]', risk.id, false, :id => nil %></td>
     <td class="subject"><%= link_to "#{l(:label_risk)} ##{risk.id}", risk_path(risk), :title => risk.subject %>: <%= risk.subject %></td>
     <td class="status"><%= l("label_risk_status_#{risk.status}") if risk.status.present? %></td>
     <td class="magnitude"><%= risk.magnitude %></td>
@@ -31,10 +33,12 @@
                     :title => l(:label_relation_delete),
                     :class => 'icon-only icon-link-break') %>
       <% end %>
+      <%= link_to_context_menu %>
     </td>
   </tr>
   <% end %>
 </table>
+<% end %>
 <% end %>
 
 <% if add_allowed %>

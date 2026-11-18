@@ -41,6 +41,10 @@ class RisksIssuesControllerTest < ActionController::TestCase
         assert_select 'td.assigned_to a', :text => 'Redmine Admin'
         assert_select 'td.buttons a.icon-link-break[href="/issues/1/risks/1"]'
       end
+      assert_select 'form[data-cm-url="/risks/context_menu"] tr.hascontextmenu#issue-risk-1' do
+        assert_select 'td.checkbox input[name="ids[]"][value="1"]'
+        assert_select 'td.buttons a.js-contextmenu'
+      end
       assert_select 'form#new-issue-risk-form[action="/issues/1/risks"]'
     end
   end

@@ -12,6 +12,7 @@ table.risks td.last_notes {
 /* Related risks section in the issue details, styled like the related issues */
 #issue-risks table.risks {border: 0;}
 #issue-risks table.risks td {border: 0;}
+#issue-risks td.checkbox {display: none;}
 #issue-risks td.buttons {padding: 0;}
 #issue-risks .risk > td {
   text-overflow: ellipsis;
