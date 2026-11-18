@@ -186,9 +186,11 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     compatible_request :get, :index, :ids => [1]
 
     assert_response :success
-    assert_select 'a.separator.disabled[href="#"]', :text => '──────────'
-    assert_select 'li:has(a[href*=?]) + li a.separator', "risk%5Bcategory_id%5D=#{technical.id}"
-    assert_select 'li:has(a.separator) + li a[href*=?]', "risk%5Bcategory_id%5D=#{regulatory.id}"
+    assert_select 'li.separator[role=separator]', 1
+    assert_select 'li.separator a', 0
+    assert_select 'li.separator', :text => ''
+    assert_select 'li:has(a[href*=?]) + li.separator', "risk%5Bcategory_id%5D=#{technical.id}"
+    assert_select 'li.separator + li a[href*=?]', "risk%5Bcategory_id%5D=#{regulatory.id}"
   end
 
   def test_get_risks_without_project_categories_should_not_display_separator
@@ -197,6 +199,6 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     compatible_request :get, :index, :ids => [1]
 
     assert_response :success
-    assert_select 'a.separator', 0
+    assert_select 'li.separator', 0
   end
 end
