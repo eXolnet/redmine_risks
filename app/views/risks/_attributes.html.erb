@@ -10,8 +10,10 @@
         <p><%= f.select :assigned_to_id, principals_options_for_select(@risk.assignable_users, @risk.assigned_to), :include_blank => true %></p>
       <% end %>
 
-      <% if @risk.safe_attribute?('category_id') && RiskCategory.active.any? %>
-        <p><%= f.select :category_id, RiskCategory.active.order('name ASC').collect {|c| [c.name, c.id]}, :include_blank => true %></p>
+      <% categories = RiskCategory.available_categories(@risk.project).to_a %>
+      <% categories << @risk.category if @risk.persisted? && @risk.category && !categories.include?(@risk.category) %>
+      <% if @risk.safe_attribute?('category_id') && categories.any? %>
+        <p><%= f.select :category_id, categories.collect {|c| [c.name, c.id]}, :include_blank => true %></p>
       <% end %>
 
       <% if @risk.safe_attribute?('probability') %>

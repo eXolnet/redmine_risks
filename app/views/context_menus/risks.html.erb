@@ -58,11 +58,11 @@
     </li>
   <% end %>
 
-  <% if @safe_attributes.include?('category_id') && RiskCategory.active.any? -%>
+  <% if @safe_attributes.include?('category_id') && @categories.any? -%>
     <li class="folder">
       <a href="#" class="submenu"><%= l(:field_category) %></a>
       <ul>
-        <% RiskCategory.active.order('name ASC').each do |c| -%>
+        <% @categories.each do |c| -%>
           <li>
             <%= context_menu_link c.name, bulk_update_risks_path(:ids => @risk_ids, :risk => {'category_id' => c.id}, :back_url => @back),
                                   :method => :post,

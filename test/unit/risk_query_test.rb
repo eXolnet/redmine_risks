@@ -333,4 +333,31 @@ class RiskQueryTest < ActiveSupport::TestCase
     assert build_query.available_columns.none? {|c| c.name == "cf_#{field.id}".to_sym}
     assert_nil build_query.available_filters["cf_#{field.id}"]
   end
+
+  def test_category_filter_values_should_only_include_active_project_categories
+    technical = RiskCategory.create!(:name => 'Technical', :position => 1)
+    financial = RiskCategory.create!(:name => 'Financial', :position => 2)
+    RiskCategory.create!(:name => 'Legacy', :position => 3, :active => false)
+    @project.risk_categories.create!(:name => 'Financial', :parent => financial, :active => false)
+
+    values = build_query.available_filters['category_id'][:values]
+    assert_equal [['Technical', technical.id.to_s]], values
+
+    global_values = build_query({}, :project => nil).available_filters['category_id'][:values]
+    assert_equal [['Technical', technical.id.to_s], ['Financial', financial.id.to_s]], global_values
+  end
+
+  def test_category_filter_should_match_project_overrides
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = @project.risk_categories.create!(:name => 'Technical', :parent => technical, :active => true)
+    Risk.where(:id => 1).update_all(:category_id => technical.id)
+    Risk.where(:id => 2).update_all(:category_id => override.id)
+
+    query = build_query('status' => ['*', ['']], 'category_id' => ['=', [technical.id.to_s]])
+    assert_equal [1, 2], query.risks.map(&:id).sort
+
+    query = build_query('status' => ['*', ['']], 'category_id' => ['!', [technical.id.to_s]])
+    assert_not_include 1, query.risks.map(&:id)
+    assert_not_include 2, query.risks.map(&:id)
+  end
 end

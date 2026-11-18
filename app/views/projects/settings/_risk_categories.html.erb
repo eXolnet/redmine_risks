@@ -1,0 +1,50 @@
+<div class="contextual">
+<%= link_to(sprite_icon('del', l(:button_reset)), project_risk_categories_path(@project),
+            :method => :delete,
+            :data => {:confirm => l(:text_are_you_sure)},
+            :class => 'icon icon-del') %>
+<% if User.current.admin? %>
+<%= link_to sprite_icon('settings', l(:label_administration)), enumerations_path, :class => "icon icon-settings" %>
+<% end %>
+</div>
+
+<% categories = @project.risk_categories_available(true).to_a %>
+<% if categories.empty? %>
+<p class="nodata"><%= l(:label_no_data) %></p>
+<% else %>
+<%= form_tag(project_risk_categories_path(@project), :method => :put, :class => "tabular", :id => 'project-risk-categories-form') do %>
+
+<table class="list">
+  <thead><tr>
+    <th><%= l(:field_name) %></th>
+    <th><%= l(:field_risk_category_system) %></th>
+    <% RiskCategory.new.available_custom_fields.each do |value| %>
+    <th><%= value.name %></th>
+    <% end %>
+    <th><%= toggle_checkboxes_link('input.enumerations_active') %> <%= l(:field_active) %></th>
+  </tr></thead>
+
+  <% categories.each do |enumeration| %>
+  <%= fields_for "enumerations[#{enumeration.id}]", enumeration do |ff| %>
+  <tr>
+    <td class="name">
+      <%= ff.hidden_field :parent_id, :value => enumeration.id unless enumeration.project %>
+      <%= enumeration %>
+    </td>
+    <td class="tick"><%= checked_image !enumeration.project %></td>
+    <% enumeration.custom_field_values.each do |value| %>
+    <td>
+      <%= custom_field_tag "enumerations[#{enumeration.id}]", value %>
+    </td>
+    <% end %>
+    <td>
+      <%= ff.check_box :active, :class => 'enumerations_active' %>
+    </td>
+  </tr>
+  <% end %>
+  <% end %>
+</table>
+
+<%= submit_tag l(:button_save) %>
+<% end %>
+<% end %>

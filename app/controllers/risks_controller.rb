@@ -211,7 +211,7 @@ class RisksController < ApplicationController
 
     @safe_attributes = @risks.map(&:safe_attribute_names).reduce(:&)
     @assignables = @risks.map(&:assignable_users).reduce(:&)
-    @categories = RiskCategory.active.order(:name).to_a
+    @categories = @risks.map(&:project).uniq.map {|p| RiskCategory.available_categories(p).to_a }.reduce(:&) || []
     @custom_fields = @risks.map {|risk| risk.editable_custom_field_values.map(&:custom_field)}.
       reduce(:&).
       select {|field| field.format.bulk_edit_supported}

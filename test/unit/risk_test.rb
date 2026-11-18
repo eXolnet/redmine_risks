@@ -709,4 +709,68 @@ class RiskTest < ActiveSupport::TestCase
       assert_equal 'Lessons learned', Risk.human_attribute_name(:lessons)
     end
   end
+
+  def test_category_should_be_active_in_project
+    technical = RiskCategory.create!(:name => 'Technical')
+    project = Project.find(1)
+    project.risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+
+    risk = Risk.find(1)
+    risk.category_id = technical.id
+    assert_not risk.valid?
+    assert_include :category_id, risk.errors.attribute_names
+  end
+
+  def test_inactive_system_category_should_be_invalid
+    legacy = RiskCategory.create!(:name => 'Legacy', :active => false)
+    risk = Risk.find(1)
+    risk.category_id = legacy.id
+
+    assert_not risk.valid?
+  end
+
+  def test_risk_should_keep_category_disabled_in_project
+    technical = RiskCategory.create!(:name => 'Technical')
+    project = Project.find(1)
+    Risk.where(:id => 1).update_all(:category_id => technical.id)
+    project.update_or_create_risk_categories(
+      technical.id.to_s => {'parent_id' => technical.id.to_s, 'active' => '0'}
+    )
+
+    risk = Risk.find(1)
+    assert_equal 'Technical', risk.category.name
+    assert_not risk.category.active?
+
+    risk.subject = 'Updated subject'
+    assert risk.save
+    assert_equal 'Technical', risk.reload.category.name
+  end
+
+  def test_copy_from_should_map_category_to_project_override
+    User.current = User.find(1)
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = Project.find(1).risk_categories.create!(:name => 'Technical', :parent => technical, :active => true)
+    Risk.where(:id => 2).update_all(:category_id => technical.id)
+
+    risk = Risk.new(:project => Project.find(1)).copy_from(Risk.find(2))
+    assert_equal override, risk.category
+
+    risk = Risk.new(:project => Project.find(2)).copy_from(Risk.find(2))
+    assert_equal technical, risk.category
+  end
+
+  def test_copy_to_project_where_category_is_disabled_should_drop_category
+    User.current = User.find(1)
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = Project.find(1).risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+    Risk.where(:id => 1).update_all(:category_id => override.id)
+
+    risk = Risk.new(:project => Project.find(2)).copy_from(Risk.find(1))
+    assert_equal technical, risk.category
+
+    risk.project = Project.find(1)
+    risk.subject = 'Copy'
+    assert risk.save, risk.errors.full_messages.join(', ')
+    assert_nil risk.reload.category_id
+  end
 end

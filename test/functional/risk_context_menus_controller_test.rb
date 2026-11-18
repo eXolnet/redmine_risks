@@ -164,4 +164,18 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'a.icon-copy.disabled'
   end
+
+  def test_get_risks_should_only_list_active_project_categories
+    technical = RiskCategory.create!(:name => 'Technical', :position => 1)
+    financial = RiskCategory.create!(:name => 'Financial', :position => 2)
+    RiskCategory.create!(:name => 'Legacy', :position => 3, :active => false)
+    @project1.risk_categories.create!(:name => 'Financial', :parent => financial, :active => false)
+
+    compatible_request :get, :index, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'a[href*=?]', "risk%5Bcategory_id%5D=#{technical.id}", :text => 'Technical'
+    assert_select 'a', :text => 'Financial', :count => 0
+    assert_select 'a', :text => 'Legacy', :count => 0
+  end
 end

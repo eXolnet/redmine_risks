@@ -247,4 +247,21 @@ class RiskDashboardsControllerTest < ActionController::TestCase
     # Risk #2 is closed
     assert_select '.risk-by-strategy tr.strategy-transfer', 0
   end
+
+  def test_show_should_count_project_overrides_with_their_system_category
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = @project.risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+    Risk.find(1).update_column(:category_id, override.id)
+    # A risk still referencing the system category (eg. created before the override)
+    create_risk.update_column(:category_id, technical.id)
+
+    show
+
+    assert_select '.risk-by-category tr', 1
+    assert_select ".risk-by-category tr.category-#{technical.id}" do
+      assert_select 'td.name', :text => 'Technical'
+      assert_select 'td.count a', :text => '2'
+      assert_select 'td.count a[href*=?]', "v%5Bcategory_id%5D%5B%5D=#{technical.id}"
+    end
+  end
 end

@@ -13,6 +13,7 @@ class RiskContextMenusController < ApplicationController
     @projects = @risks.collect(&:project).compact.uniq
     @assignables = @risks.map(&:assignable_users).reduce(:&)
     @safe_attributes = @risks.map(&:safe_attribute_names).reduce(:&)
+    @categories = @projects.map {|p| RiskCategory.available_categories(p).to_a }.reduce(:&) || []
 
     @can = {
       :edit => @risks.all? {|t| t.editable?(User.current)},

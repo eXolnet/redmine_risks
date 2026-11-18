@@ -50,6 +50,8 @@ zh-TW:
   default_risk_category_technical: "技術風險"
   default_risk_category_unforeseeable: "不可接受風險"
   enumeration_risk_categories: "風險類型"
+  field_risk_category_system: "系統類型"
+  permission_manage_project_risk_categories: "管理專案風險類型"
   notice_risk_successful_create: "風險已建立"
   notice_risk_successful_update: "更新成功"
   notice_risk_successful_delete: "刪除成功"
