@@ -28,7 +28,7 @@
   <% if Redmine::VERSION.to_s < '4.0' %>
     <%= preview_link preview_edit_risk_path(:project_id => @project, :id => @risk), 'risk-form' %>
   <% end %>
-  | <%= link_to l(:button_cancel), risk_path(id: @risk.id), :onclick => params[:action] == 'show' ? "$('#update').hide(); return false;" : '' %>
+  <%= link_to l(:button_cancel), risk_path(id: @risk.id), :onclick => params[:action] == 'show' ? "$('#update').hide(); return false;" : '' %>
 <% end %>
 
 <% if Redmine::VERSION.to_s < '4.0' %>

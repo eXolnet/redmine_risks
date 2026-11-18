@@ -443,6 +443,14 @@ class RisksControllerTest < ActionController::TestCase
     end
   end
 
+  def test_get_edit_should_not_separate_submit_and_cancel_with_a_pipe
+    compatible_request :get, :edit, :id => 1
+
+    assert_response :success
+    assert_select 'form#risk-form a[href=?]', '/risks/1', :text => 'Cancel'
+    assert_no_match /\|\s*<a[^>]*>Cancel</, response.body
+  end
+
   def test_get_edit_and_bulk_edit_should_label_assignee_consistently
     compatible_request :get, :edit, :id => 1
     assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
