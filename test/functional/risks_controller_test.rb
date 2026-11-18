@@ -194,4 +194,25 @@ class RisksControllerTest < ActionController::TestCase
     assert_equal 100, risk2.impact
     assert_equal 'eliminate', risk2.strategy
   end
+
+  def test_delete_destroy_risks_of_several_projects
+    EnabledModule.create!(:project_id => 3, :name => 'risks')
+    risk = Risk.create!(:project_id => 3, :subject => 'Subproject risk', :author_id => 1)
+
+    compatible_request :delete, :destroy, :ids => [1, risk.id]
+
+    assert_redirected_to '/'
+    assert_nil Risk.find_by_id(1)
+    assert_nil Risk.find_by_id(risk.id)
+  end
+
+  def test_post_bulk_update_risks_of_several_projects
+    EnabledModule.create!(:project_id => 3, :name => 'risks')
+    risk = Risk.create!(:project_id => 3, :subject => 'Subproject risk', :author_id => 1)
+
+    compatible_request :post, :bulk_update, :ids => [1, risk.id], :risk => {:strategy => 'accept'}
+
+    assert_redirected_to '/'
+    assert_equal ['accept'], Risk.where(:id => [1, risk.id]).distinct.pluck(:strategy)
+  end
 end

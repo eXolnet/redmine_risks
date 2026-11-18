@@ -142,7 +142,7 @@ class RisksController < ApplicationController
     flash[:notice] = l(:notice_risk_successful_delete) unless api_request?
 
     respond_to do |format|
-      format.html { redirect_back_or_default(@project ? project_risks_path(@project) : nil) }
+      format.html { redirect_back_or_default(@project ? project_risks_path(@project) : home_path) }
       format.api  { render_api_ok }
     end
   end
@@ -209,7 +209,7 @@ class RisksController < ApplicationController
       flash[:notice] = l(:notice_risk_successful_update) unless risks_saved.empty?
     end
 
-    redirect_back_or_default(@project ? project_risks_path(@project) : nil)
+    redirect_back_or_default(@project ? project_risks_path(@project) : home_path)
   end
 
   private
