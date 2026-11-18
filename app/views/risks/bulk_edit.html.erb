@@ -19,7 +19,7 @@
 
 <ul id="bulk-selection">
 <% @risks.each do |risk| %>
-  <%= content_tag 'li', link_to("#{l(:label_risk)} ##{risk.id}: #{risk.subject}", risk_path(risk)) %>
+  <%= content_tag 'li', safe_join([link_to("#{l(:label_risk)} ##{risk.id}", risk_path(risk)), risk.subject], ': ') %>
 <% end %>
 </ul>
 

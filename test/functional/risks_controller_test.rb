@@ -426,6 +426,9 @@ class RisksControllerTest < ActionController::TestCase
 
     assert_response :success
     assert_select 'ul#bulk-selection li', 2
+    assert_select 'ul#bulk-selection li', :text => 'Risk #1: Sit sodales posuere' do
+      assert_select 'a[href=?]', '/risks/1', :text => 'Risk #1'
+    end
     assert_select 'form#bulk_edit_form[action=?]', '/risks/bulk_update' do
       assert_select 'input[name=?][value=?]', 'ids[]', '1'
       assert_select 'input[name=?][value=?]', 'ids[]', '2'
