@@ -3,31 +3,47 @@ class ProjectRiskCategoriesController < ApplicationController
 
   before_action :find_project_by_project_id
   before_action :authorize
-  before_action :find_project_specific_category, :only => :destroy
+  before_action :find_project_specific_category, :only => [:edit, :update, :destroy]
+
+  def new
+    @category = @project.risk_categories.build
+  end
 
   # Adds a category specific to the project
   def create
-    category = @project.risk_categories.build(:name => params.dig(:risk_category, :name), :active => true)
-    if category.save
+    @category = @project.risk_categories.build(category_params.merge(:active => true))
+    if @category.save
       flash[:notice] = l(:notice_successful_create)
+      redirect_to_settings
     else
-      flash[:error] = category.errors.full_messages.join(', ')
+      render :new
     end
-
-    redirect_to settings_project_path(@project, :tab => 'risks')
   end
 
-  # Enables or disables the system categories in the project, and enables,
-  # disables or renames the categories specific to the project
+  def edit
+  end
+
+  # Renames a category specific to the project
   def update
-    if @project.update_or_create_risk_categories(update_params)
+    if @category.update(category_params)
+      flash[:notice] = l(:notice_successful_update)
+      redirect_to_settings
+    else
+      render :edit
+    end
+  end
+
+  # Enables or disables the system categories and the categories specific to
+  # the project
+  def bulk_update
+    if @project.update_or_create_risk_categories(bulk_update_params)
       flash[:notice] = l(:notice_successful_update)
     else
       invalid = @project.invalid_risk_category
-      flash[:error] = "#{invalid.name_was.presence || invalid.name}: #{invalid.errors.full_messages.join(', ')}"
+      flash[:error] = "#{invalid.name}: #{invalid.errors.full_messages.join(', ')}"
     end
 
-    redirect_to settings_project_path(@project, :tab => 'risks')
+    redirect_to_settings
   end
 
   # Resets the overrides of the system categories (the categories specific
@@ -37,7 +53,7 @@ class ProjectRiskCategoriesController < ApplicationController
       category.destroy(category.parent)
     end
     flash[:notice] = l(:notice_successful_update)
-    redirect_to settings_project_path(@project, :tab => 'risks')
+    redirect_to_settings
   end
 
   # Deletes a category specific to the project. Its risks must be reassigned
@@ -63,19 +79,27 @@ class ProjectRiskCategoriesController < ApplicationController
 
     @category.destroy
     flash[:notice] = l(:notice_successful_delete)
-    redirect_to settings_project_path(@project, :tab => 'risks')
+    redirect_to_settings
   end
 
   private
+
+  def redirect_to_settings
+    redirect_to settings_project_path(@project, :tab => 'risks')
+  end
 
   def find_project_specific_category
     @category = @project.risk_categories.where(:parent_id => nil).find_by_id(params[:id])
     render_404 unless @category
   end
 
-  def update_params
+  def category_params
+    params.fetch(:risk_category, {}).permit(:name)
+  end
+
+  def bulk_update_params
     params.
-      permit(:enumerations => [:parent_id, :active, :name, {:custom_field_values => {}}]).
+      permit(:enumerations => [:parent_id, :active, {:custom_field_values => {}}]).
       require(:enumerations)
   end
 end

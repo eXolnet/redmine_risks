@@ -12,10 +12,9 @@ get '/projects/:project_id/risks/dashboard', :to => 'risk_dashboards#show', :as 
 resources :projects do
   resources :risks, :only => [:index, :new, :create]
   get 'risks/:copy_from/copy', :to => 'risks#new', :as => 'copy_risk', :copy_from => /\d+/
-  post   'risk_categories', :to => 'project_risk_categories#create', :as => 'risk_categories'
-  put    'risk_categories', :to => 'project_risk_categories#update'
+  put    'risk_categories', :to => 'project_risk_categories#bulk_update'
   delete 'risk_categories', :to => 'project_risk_categories#reset', :as => 'reset_risk_categories'
-  delete 'risk_categories/:id', :to => 'project_risk_categories#destroy', :as => 'risk_category', :id => /\d+/
+  resources :risk_categories, :controller => 'project_risk_categories', :except => [:index, :show]
 end
 
 resources :risks, :except => [:index, :new, :create] do

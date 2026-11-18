@@ -8,6 +8,8 @@
 <% end %>
 </div>
 
+<p><%= link_to sprite_icon('add', l(:label_risk_category_new)), new_project_risk_category_path(@project), :class => 'icon icon-add' %></p>
+
 <% categories = @project.risk_categories_available(true).to_a %>
 <% if categories.empty? %>
 <p class="nodata"><%= l(:label_no_data) %></p>
@@ -29,12 +31,8 @@
   <%= fields_for "enumerations[#{enumeration.id}]", enumeration do |ff| %>
   <tr id="risk-category-<%= enumeration.id %>" class="<%= enumeration.project_specific? ? 'project-specific' : 'system' %>">
     <td class="name">
-      <% if enumeration.project_specific? %>
-        <%= ff.text_field :name, :size => 30, :maxlength => 30, :required => true %>
-      <% else %>
-        <%= ff.hidden_field :parent_id, :value => enumeration.id unless enumeration.project %>
-        <%= enumeration %>
-      <% end %>
+      <%= ff.hidden_field :parent_id, :value => enumeration.id unless enumeration.project %>
+      <%= enumeration %>
     </td>
     <td class="tick"><%= checked_image !enumeration.project_specific? %></td>
     <% enumeration.custom_field_values.each do |value| %>
@@ -47,10 +45,8 @@
     </td>
     <td class="buttons">
       <% if enumeration.project_specific? %>
-        <%= link_to(sprite_icon('del', l(:button_delete)), project_risk_category_path(@project, enumeration),
-                    :method => :delete,
-                    :data => (enumeration.in_use? ? {} : {:confirm => l(:text_are_you_sure)}),
-                    :class => 'icon icon-del') %>
+        <%= link_to sprite_icon('edit', l(:button_edit)), edit_project_risk_category_path(@project, enumeration), :class => 'icon icon-edit' %>
+        <%= delete_link project_risk_category_path(@project, enumeration) %>
       <% end %>
     </td>
   </tr>
@@ -60,11 +56,4 @@
 
 <%= submit_tag l(:button_save) %>
 <% end %>
-<% end %>
-
-<h3><%= l(:label_risk_category_new) %></h3>
-<%= form_tag(project_risk_categories_path(@project), :method => :post, :id => 'new-risk-category-form') do %>
-  <%= label_tag 'risk_category_name', l(:field_name) %>
-  <%= text_field_tag 'risk_category[name]', '', :id => 'risk_category_name', :size => 30, :maxlength => 30, :required => true %>
-  <%= submit_tag l(:button_add) %>
 <% end %>

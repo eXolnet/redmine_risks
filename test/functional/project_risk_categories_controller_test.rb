@@ -30,9 +30,9 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
     @request.session[:user_id] = 2
   end
 
-  def test_put_update_should_create_project_override
+  def test_put_bulk_update_should_create_project_override
     assert_difference 'RiskCategory.count' do
-      compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
+      compatible_request :put, :bulk_update, :project_id => 'ecookbook', :enumerations => {
         @technical.id.to_s => {:parent_id => @technical.id.to_s, :active => '0'},
         @financial.id.to_s => {:parent_id => @financial.id.to_s, :active => '1'}
       }
@@ -45,10 +45,10 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
     assert_equal [@financial], @project.risk_categories_available.to_a
   end
 
-  def test_put_update_should_update_existing_override
+  def test_put_bulk_update_should_update_existing_override
     override = @project.risk_categories.create!(:name => 'Technical', :parent => @technical, :active => false)
 
-    compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
+    compatible_request :put, :bulk_update, :project_id => 'ecookbook', :enumerations => {
       override.id.to_s => {:active => '1'}
     }
 
@@ -57,7 +57,7 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
   end
 
   def test_delete_destroy_should_reset_overrides_and_restore_risks
-    compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
+    compatible_request :put, :bulk_update, :project_id => 'ecookbook', :enumerations => {
       @technical.id.to_s => {:parent_id => @technical.id.to_s, :active => '0'}
     }
     assert_equal 1, @project.risk_categories.count
@@ -69,21 +69,21 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
     assert_equal [@technical.id], Risk.where(:id => [1, 2]).distinct.pluck(:category_id)
   end
 
-  def test_put_update_without_permission_should_be_forbidden
+  def test_put_bulk_update_without_permission_should_be_forbidden
     @role.remove_permission!(:manage_project_risk_categories)
 
     assert_no_difference 'RiskCategory.count' do
-      compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
+      compatible_request :put, :bulk_update, :project_id => 'ecookbook', :enumerations => {
         @technical.id.to_s => {:parent_id => @technical.id.to_s, :active => '0'}
       }
     end
     assert_response :forbidden
   end
 
-  def test_put_update_with_module_disabled_should_be_forbidden
+  def test_put_bulk_update_with_module_disabled_should_be_forbidden
     @project.enabled_modules.where(:name => 'risks').delete_all
 
-    compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
+    compatible_request :put, :bulk_update, :project_id => 'ecookbook', :enumerations => {
       @technical.id.to_s => {:parent_id => @technical.id.to_s, :active => '0'}
     }
     assert_response :forbidden
@@ -104,15 +104,6 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
     assert_include category, @project.risk_categories_available.to_a
   end
 
-  def test_post_create_with_system_category_name_should_fail
-    assert_no_difference 'RiskCategory.count' do
-      compatible_request :post, :create, :project_id => 'ecookbook', :risk_category => {:name => 'Technical'}
-    end
-
-    assert_redirected_to '/projects/ecookbook/settings/risks'
-    assert_not_nil flash[:error]
-  end
-
   def test_post_create_without_permission_should_be_forbidden
     @role.remove_permission!(:manage_project_risk_categories)
 
@@ -120,29 +111,6 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
       compatible_request :post, :create, :project_id => 'ecookbook', :risk_category => {:name => 'Regulatory'}
     end
     assert_response :forbidden
-  end
-
-  def test_put_update_should_rename_project_specific_category
-    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
-
-    compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
-      regulatory.id.to_s => {:name => 'Compliance', :active => '1'}
-    }
-
-    assert_redirected_to '/projects/ecookbook/settings/risks'
-    assert_equal 'Compliance', regulatory.reload.name
-  end
-
-  def test_put_update_with_invalid_name_should_display_error
-    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
-
-    compatible_request :put, :update, :project_id => 'ecookbook', :enumerations => {
-      regulatory.id.to_s => {:name => 'Financial', :active => '1'}
-    }
-
-    assert_redirected_to '/projects/ecookbook/settings/risks'
-    assert_match 'Regulatory', flash[:error]
-    assert_equal 'Regulatory', regulatory.reload.name
   end
 
   def test_delete_reset_should_keep_project_specific_categories
@@ -234,6 +202,95 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
     assert_response :not_found
     assert_not_nil RiskCategory.find_by_id(marketing.id)
   end
+
+  def test_get_new
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'form#risk-category-form[action=?][method=post]', '/projects/ecookbook/risk_categories' do
+      assert_select 'input[name=?]', 'risk_category[name]'
+    end
+  end
+
+  def test_post_create_with_system_category_name_should_render_errors
+    assert_no_difference 'RiskCategory.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :risk_category => {:name => 'Technical'}
+    end
+
+    assert_response :success
+    assert_select '#errorExplanation'
+    assert_select 'input[name=?][value=?]', 'risk_category[name]', 'Technical'
+  end
+
+  def test_get_edit
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :get, :edit, :project_id => 'ecookbook', :id => regulatory.id
+
+    assert_response :success
+    assert_select 'form#risk-category-form[action=?]', "/projects/ecookbook/risk_categories/#{regulatory.id}" do
+      assert_select 'input[name=?][value=?]', 'risk_category[name]', 'Regulatory'
+    end
+  end
+
+  def test_get_edit_override_should_respond_404
+    override = @project.risk_categories.create!(:name => 'Technical', :parent => @technical, :active => false)
+
+    compatible_request :get, :edit, :project_id => 'ecookbook', :id => override.id
+    assert_response :not_found
+  end
+
+  def test_put_update_should_rename_project_specific_category
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :put, :update, :project_id => 'ecookbook', :id => regulatory.id,
+                       :risk_category => {:name => 'Compliance'}
+
+    assert_redirected_to '/projects/ecookbook/settings/risks'
+    assert_equal 'Compliance', regulatory.reload.name
+    assert regulatory.active?
+  end
+
+  def test_put_update_with_invalid_name_should_render_errors
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :put, :update, :project_id => 'ecookbook', :id => regulatory.id,
+                       :risk_category => {:name => 'Financial'}
+
+    assert_response :success
+    assert_select '#errorExplanation'
+    assert_equal 'Regulatory', regulatory.reload.name
+  end
+
+  def test_put_update_category_of_another_project_should_respond_404
+    marketing = Project.find(2).risk_categories.create!(:name => 'Marketing')
+
+    compatible_request :put, :update, :project_id => 'ecookbook', :id => marketing.id,
+                       :risk_category => {:name => 'Other'}
+
+    assert_response :not_found
+    assert_equal 'Marketing', marketing.reload.name
+  end
+
+  def test_put_bulk_update_should_disable_project_specific_category_without_renaming_it
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :put, :bulk_update, :project_id => 'ecookbook', :enumerations => {
+      regulatory.id.to_s => {:name => 'Other', :active => '0'}
+    }
+
+    assert_redirected_to '/projects/ecookbook/settings/risks'
+    regulatory.reload
+    assert_equal 'Regulatory', regulatory.name
+    assert_not regulatory.active?
+  end
+
+  def test_get_new_without_permission_should_be_forbidden
+    @role.remove_permission!(:manage_project_risk_categories)
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+    assert_response :forbidden
+  end
 end
 
 class ProjectsControllerRiskCategoriesTabTest < ActionController::TestCase
@@ -314,14 +371,17 @@ class ProjectsControllerRiskCategoriesTabTest < ActionController::TestCase
     compatible_request :get, :settings, :id => 'ecookbook', :tab => 'risks'
 
     assert_response :success
+    assert_select 'a.icon-add[href=?]', '/projects/ecookbook/risk_categories/new'
     assert_select "tr#risk-category-#{regulatory.id}.project-specific" do
-      assert_select 'input[type=text][name=?][value=?]', "enumerations[#{regulatory.id}][name]", 'Regulatory'
-      assert_select 'input[name=?]', "enumerations[#{regulatory.id}][parent_id]", 0
+      assert_select 'td.name', :text => 'Regulatory'
+      assert_select 'input[type=text]', 0
+      assert_select 'input[type=checkbox][name=?][checked]', "enumerations[#{regulatory.id}][active]"
+      assert_select 'a.icon-edit[href=?]', "/projects/ecookbook/risk_categories/#{regulatory.id}/edit"
       assert_select 'a.icon-del[href=?][data-method=delete]', "/projects/ecookbook/risk_categories/#{regulatory.id}"
     end
-    assert_select "tr#risk-category-#{@legacy.id}.system a.icon-del", 0
-    assert_select 'form#new-risk-category-form[action=?]', '/projects/ecookbook/risk_categories' do
-      assert_select 'input[name=?]', 'risk_category[name]'
+    assert_select "tr#risk-category-#{@legacy.id}.system" do
+      assert_select 'a.icon-edit', 0
+      assert_select 'a.icon-del', 0
     end
   end
 end
