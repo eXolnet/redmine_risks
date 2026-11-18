@@ -164,4 +164,41 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'a.icon-copy.disabled'
   end
+
+  def test_get_risks_should_only_list_active_project_categories
+    technical = RiskCategory.create!(:name => 'Technical', :position => 1)
+    financial = RiskCategory.create!(:name => 'Financial', :position => 2)
+    RiskCategory.create!(:name => 'Legacy', :position => 3, :active => false)
+    @project1.risk_categories.create!(:name => 'Financial', :parent => financial, :active => false)
+
+    compatible_request :get, :index, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'a[href*=?]', "risk%5Bcategory_id%5D=#{technical.id}", :text => 'Technical'
+    assert_select 'a', :text => 'Financial', :count => 0
+    assert_select 'a', :text => 'Legacy', :count => 0
+  end
+
+  def test_get_risks_should_separate_system_and_project_categories
+    technical = RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response :success
+    assert_select 'li.separator[role=separator]', 1
+    assert_select 'li.separator a', 0
+    assert_select 'li.separator', :text => ''
+    assert_select 'li:has(a[href*=?]) + li.separator', "risk%5Bcategory_id%5D=#{technical.id}"
+    assert_select 'li.separator + li a[href*=?]', "risk%5Bcategory_id%5D=#{regulatory.id}"
+  end
+
+  def test_get_risks_without_project_categories_should_not_display_separator
+    RiskCategory.create!(:name => 'Technical')
+
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response :success
+    assert_select 'li.separator', 0
+  end
 end

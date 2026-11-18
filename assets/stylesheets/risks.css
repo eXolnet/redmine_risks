@@ -169,3 +169,16 @@ table.risk-breakdown-table .risk-bar {
   opacity: .45;
   vertical-align: middle;
 }
+
+/* Separator between the system and project categories in the context menu */
+#context-menu li.separator,
+#context-menu li.separator:hover {
+  height: 0;
+  margin: 3px 6px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #ccc;
+  border-radius: 0;
+  background: none;
+  cursor: default;
+}

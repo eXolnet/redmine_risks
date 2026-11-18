@@ -611,4 +611,137 @@ class RisksControllerTest < ActionController::TestCase
     assert_equal 'accept', Risk.find(1).strategy
     assert_equal 'transfer', Risk.find(2).strategy
   end
+
+  def test_get_new_should_only_list_active_project_categories
+    technical = RiskCategory.create!(:name => 'Technical', :position => 1)
+    financial = RiskCategory.create!(:name => 'Financial', :position => 2)
+    RiskCategory.create!(:name => 'Legacy', :position => 3, :active => false)
+    @project1.risk_categories.create!(:name => 'Financial', :parent => financial, :active => false)
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id' do
+      assert_select 'option', 2 # blank + Technical
+      assert_select 'option[value=?]', technical.id.to_s, :text => 'Technical'
+    end
+  end
+
+  def test_get_edit_should_keep_current_category_disabled_in_project
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = @project1.risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+    Risk.where(:id => 1).update_all(:category_id => override.id)
+
+    compatible_request :get, :edit, :id => 1
+
+    assert_response :success
+    assert_select 'select#risk_category_id option[selected][value=?]', override.id.to_s, :text => 'Technical'
+  end
+
+  def test_post_create_with_category_disabled_in_project_should_fail
+    technical = RiskCategory.create!(:name => 'Technical')
+    @project1.risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+
+    assert_no_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook',
+                         :risk => {:subject => 'New risk', :category_id => technical.id}
+    end
+    assert_response :success
+    assert_select '#errorExplanation'
+  end
+
+  def test_post_create_copy_to_project_should_map_category_override
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = @project1.risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+    Risk.where(:id => 1).update_all(:category_id => override.id)
+    EnabledModule.create!(:project_id => 2, :name => 'risks')
+
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1,
+        :risk => {:project_id => '2', :subject => 'Copy', :category_id => override.id.to_s}
+    end
+
+    risk = Risk.order('id DESC').first
+    assert_equal 2, risk.project_id
+    assert_equal technical, risk.category
+  end
+
+  def test_get_copy_with_category_disabled_in_project_should_not_preselect_it
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = @project1.risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+    Risk.where(:id => 1).update_all(:category_id => override.id)
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 1
+
+    assert_response :success
+    assert_select 'select#risk_category_id option[value=?]', override.id.to_s, 0
+  end
+
+  def test_get_bulk_edit_should_only_list_categories_active_in_all_projects
+    technical = RiskCategory.create!(:name => 'Technical', :position => 1)
+    financial = RiskCategory.create!(:name => 'Financial', :position => 2)
+    RiskCategory.create!(:name => 'Legacy', :position => 3, :active => false)
+    @project1.risk_categories.create!(:name => 'Financial', :parent => financial, :active => false)
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'select[name=?]', 'risk[category_id]' do
+      assert_select 'option[value=?]', technical.id.to_s, :text => 'Technical'
+      assert_select 'option', :text => 'Financial', :count => 0
+      assert_select 'option', :text => 'Legacy', :count => 0
+    end
+  end
+
+  def test_get_new_should_list_project_specific_categories
+    technical = RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+    Project.find(2).risk_categories.create!(:name => 'Marketing')
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id' do
+      assert_select 'option[value=?]', technical.id.to_s
+      assert_select 'option[value=?]', regulatory.id.to_s, :text => 'Regulatory'
+      assert_select 'option', :text => 'Marketing', :count => 0
+    end
+  end
+
+  def test_get_new_should_separate_system_and_project_categories
+    technical = RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id' do
+      assert_select 'option', 4
+      assert_select 'option:nth-child(2)[value=?]', technical.id.to_s
+      assert_select 'option:nth-child(3)[disabled=disabled].separator', :text => '──────────'
+      assert_select 'option:nth-child(4)[value=?]', regulatory.id.to_s
+    end
+  end
+
+  def test_get_new_without_project_categories_should_not_display_separator
+    RiskCategory.create!(:name => 'Technical')
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id option.separator', 0
+  end
+
+  def test_get_bulk_edit_of_one_project_should_separate_project_categories
+    RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'select[name=?]', 'risk[category_id]' do
+      assert_select 'option.separator[disabled=disabled]', 1
+      assert_select 'option.separator + option[value=?]', regulatory.id.to_s
+    end
+  end
 end

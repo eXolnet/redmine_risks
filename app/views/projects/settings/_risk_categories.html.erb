@@ -1,0 +1,49 @@
+<div class="contextual">
+<%= link_to(sprite_icon('del', l(:button_reset)), project_reset_risk_categories_path(@project),
+            :method => :delete,
+            :data => {:confirm => l(:text_are_you_sure)},
+            :class => 'icon icon-del') %>
+<% if User.current.admin? %>
+<%= link_to sprite_icon('settings', l(:label_administration)), enumerations_path, :class => "icon icon-settings" %>
+<% end %>
+</div>
+
+<p><%= link_to sprite_icon('add', l(:label_risk_category_new)), new_project_risk_category_path(@project), :class => 'icon icon-add' %></p>
+
+<% categories = @project.risk_categories_available(true).to_a %>
+<% if categories.empty? %>
+<p class="nodata"><%= l(:label_no_data) %></p>
+<% else %>
+<%= form_tag(project_risk_categories_path(@project), :method => :put, :class => "tabular", :id => 'project-risk-categories-form') do %>
+
+<table class="list risk-categories">
+  <thead><tr>
+    <th><%= l(:field_name) %></th>
+    <th><%= l(:field_risk_category_system) %></th>
+    <% RiskCategory.new.available_custom_fields.each do |value| %>
+    <th><%= value.name %></th>
+    <% end %>
+    <th><%= toggle_checkboxes_link('input.enumerations_active') %> <%= l(:field_active) %></th>
+    <th></th>
+  </tr></thead>
+
+  <% system_categories, project_categories = categories.partition {|c| !c.project_specific? } %>
+  <tbody class="system-categories">
+    <% system_categories.each do |enumeration| %>
+    <%= render :partial => 'project_risk_categories/row', :locals => {:enumeration => enumeration} %>
+    <% end %>
+  </tbody>
+  <tbody class="project-specific-categories">
+    <% project_categories.each do |enumeration| %>
+    <%= render :partial => 'project_risk_categories/row', :locals => {:enumeration => enumeration} %>
+    <% end %>
+  </tbody>
+</table>
+
+<%= submit_tag l(:button_save) %>
+<% end %>
+<% end %>
+
+<%= javascript_tag do %>
+  $(function() { $("table.risk-categories tbody.project-specific-categories").positionedItems(); });
+<% end %>

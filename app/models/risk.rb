@@ -44,6 +44,8 @@ class Risk < ApplicationRecord
   validates_inclusion_of :probability, :in => 0..100, :allow_nil => true
   validates_inclusion_of :impact, :in => 0..100, :allow_nil => true
   validates_inclusion_of :strategy, :in => RISK_STRATEGY, :allow_nil => true
+  before_validation :map_category_to_project, :if => :copy?
+  validate :validate_category
 
   scope :open, lambda {|*args|
     is_closed = args.size > 0 ? !args.first : false
@@ -138,6 +140,30 @@ class Risk < ApplicationRecord
     base_reload(*args)
   end
 
+  # A new category must be one of the active categories of the project. An
+  # existing risk keeps its category even if it was disabled in the project.
+  def validate_category
+    return unless category_id_changed? && category && project
+
+    unless project.risk_categories_available.include?(category)
+      errors.add :category_id, :inclusion
+    end
+  end
+
+  # Replaces the category by its equivalent among the active categories of the
+  # project (same system category), or removes it if there is none. Used for
+  # copies, which may come from a project where the category was overridden
+  # or target another project.
+  def map_category_to_project
+    return unless category && project
+
+    available = project.risk_categories_available.to_a
+    return if available.include?(category)
+
+    system_category_id = category.parent_id || category.id
+    self.category = available.detect {|c| (c.parent_id || c.id) == system_category_id }
+  end
+
   def category_id=(cid)
     self.category = nil
     write_attribute(:category_id, cid)
@@ -196,6 +222,7 @@ class Risk < ApplicationRecord
       self.issues = risk.issues.visible.to_a
     end
     @copied_from = risk
+    map_category_to_project
     self
   end
 

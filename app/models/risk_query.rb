@@ -34,7 +34,7 @@ class RiskQuery < Query
     QueryColumn.new(:id, :sortable => "#{Risk.table_name}.id", :default_order => 'desc', :caption => :label_risk_id),
     QueryColumn.new(:project, :groupable => "#{Risk.table_name}.project_id", :sortable => "#{Project.table_name}.id"),
     QueryColumn.new(:subject, :sortable => "#{Risk.table_name}.subject"),
-    QueryColumn.new(:category, :sortable => "#{RiskCategory.table_name}.position", :default_order => 'desc', :groupable => true),
+    QueryColumn.new(:category, :sortable => [RiskCategory.project_specific_order_sql, "#{RiskCategory.table_name}.position"], :default_order => 'desc', :groupable => true),
     QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc', :groupable => true),
     QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc', :groupable => true),
     RiskMagnitudeQueryColumn.new(:magnitude, :sortable => "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)", :default_order => 'desc'),
@@ -59,7 +59,7 @@ class RiskQuery < Query
 
   def initialize_available_filters
     add_available_filter "project_id", :type => :list, :values => lambda { project_values } if project.nil?
-    add_available_filter "category_id", :type => :list, :values => RiskCategory.all.collect{|s| [s.name, s.id.to_s] }
+    add_available_filter "category_id", :type => :list, :values => lambda { category_values }
     add_available_filter "author_id", :type => :list, :values => lambda { author_values }
     add_available_filter "assigned_to_id", :type => :list_optional, :values => lambda { assigned_to_values }
     add_available_filter "member_of_group", :type => :list_optional, :values => lambda { Group.givable.visible.collect {|g| [g.name, g.id.to_s] } }
@@ -243,6 +243,28 @@ class RiskQuery < Query
       end
 
     "(#{sql})"
+  end
+
+  # Active categories of the project (or system categories), identified by
+  # their system category so that a filter matches the project overrides too
+  def category_values
+    categories = project ? project.risk_categories_available : RiskCategory.shared.active
+    categories.map {|c| [c.name, (c.parent_id || c.id).to_s] }
+  end
+
+  def sql_for_category_id_field(field, operator, value)
+    case operator
+    when '=', '!'
+      ids = value.map(&:to_i).join(',')
+      ids = '0' if ids.blank?
+      t = RiskCategory.table_name
+      op = (operator == '=' ? 'IN' : 'NOT IN')
+      sql = "#{queried_table_name}.category_id #{op} (SELECT #{t}.id FROM #{t} WHERE #{t}.id IN (#{ids}) OR #{t}.parent_id IN (#{ids}))"
+      sql = "(#{queried_table_name}.category_id IS NULL OR #{sql})" if operator == '!'
+      sql
+    else
+      sql_for_field(field, operator, value, queried_table_name, field)
+    end
   end
 
   def joins_for_order_statement(order_options)

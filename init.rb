@@ -23,6 +23,9 @@ Redmine::Plugin.register :redmine_risks do
 
     # Related issues
     permission :manage_risk_relations, { :issue_risks => [:create, :destroy] }
+
+    # Project risk categories
+    permission :manage_project_risk_categories, { :projects => :settings, :project_risk_categories => [:new, :create, :edit, :update, :bulk_update, :reset, :destroy] }, :require => :member
   end
 
   # Pulls are added to the activity view

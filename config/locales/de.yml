@@ -50,6 +50,10 @@ de:
   default_risk_category_technical: Technisch
   default_risk_category_unforeseeable: Unvorhersehbar
   enumeration_risk_categories: "Risiko Kategorien"
+  field_risk_category_system: "Systemkategorie"
+  permission_manage_project_risk_categories: "Risikokategorien des Projekts verwalten"
+  label_risk_category: "Risikokategorie"
+  label_risk_category_new: "Neue Kategorie"
   notice_risk_successful_create: "Risiko erfolgreich erstellt."
   notice_risk_successful_update: "Risiko erfolgreich aktualisiert."
   notice_risk_successful_delete: "Riskio erfolgreich gelöscht."

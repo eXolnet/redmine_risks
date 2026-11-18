@@ -58,11 +58,15 @@
     </li>
   <% end %>
 
-  <% if @safe_attributes.include?('category_id') && RiskCategory.active.any? -%>
+  <% if @safe_attributes.include?('category_id') && @categories.any? -%>
     <li class="folder">
       <a href="#" class="submenu"><%= l(:field_category) %></a>
       <ul>
-        <% RiskCategory.active.order('name ASC').each do |c| -%>
+        <% system_categories, project_categories = partition_risk_categories(@categories) -%>
+        <% @categories.each do |c| -%>
+          <% if c == project_categories.first && system_categories.any? -%>
+            <li class="separator" role="separator"></li>
+          <% end -%>
           <li>
             <%= context_menu_link c.name, bulk_update_risks_path(:ids => @risk_ids, :risk => {'category_id' => c.id}, :back_url => @back),
                                   :method => :post,

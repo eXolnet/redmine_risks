@@ -48,6 +48,8 @@ This plugin version is compatible only with Redmine 6.0 and later.
 
 Enable the "Risks" module on a project and grant the risk permissions (view, add, edit, delete and manage relations) to the appropriate roles.
 
+System risk categories are managed by administrators in *Administration › Enumerations*. In the **Risks** tab of its settings (permission *Manage project risk categories*), each project can enable or disable the system categories and add, rename, disable or delete its own categories. Only the categories active in the project are offered in the risk form, filters, context menu and bulk edit, while existing risks keep their category even once it is disabled. Deleting a project category in use lets you reassign its risks to another category.
+
 Custom fields can be added to risks in *Administration » Custom fields » Risks*. They are displayed in the risk form and page, can be used as columns, filters (when "Used as a filter" is checked) and grouping criteria in the risk list, are recorded in the history and can be restricted to some roles.
 
 ### Risk dashboard
@@ -74,7 +76,7 @@ When the REST API is enabled (*Administration » Settings » API*), risks can be
 | `DELETE` | `/risks/:id.json` | Delete a risk | Delete risks |
 | `POST` | `/risks/:id/issues.json` | Link an issue (`issue_id` parameter) | Manage risk relations |
 | `DELETE` | `/risks/:id/issues/:issue_id.json` | Unlink an issue | Manage risk relations |
-| `GET` | `/enumerations/risk_categories.json` | List the risk categories | — |
+| `GET` | `/enumerations/risk_categories.json` | List the system risk categories | — |
 
 **Listing** accepts the usual query parameters: `offset`, `limit`, `sort` (eg. `sort=magnitude:desc,id`) and filters such as `status` (`open` by default; use `status=open|closed|rejected` to get every risk), `assigned_to_id`, `author_id`, `category_id`, `strategy` or `cf_<id>` for risk custom fields used as filters.
 

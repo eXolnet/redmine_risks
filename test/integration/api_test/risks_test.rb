@@ -381,4 +381,17 @@ class Redmine::ApiTest::RisksTest < Redmine::ApiTest::Base
     assert_response :no_content
     assert_nil Risk.find(1).custom_field_value(field)
   end
+
+  test "GET /enumerations/risk_categories.json should only return system categories" do
+    technical = RiskCategory.create!(:name => 'Technical', :position => 1)
+    financial = RiskCategory.create!(:name => 'Financial', :position => 2)
+    Project.find(1).risk_categories.create!(:name => 'Technical', :parent => technical, :active => false)
+
+    get '/enumerations/risk_categories.json', :headers => credentials('jsmith')
+
+    assert_response :success
+    json = ActiveSupport::JSON.decode(response.body)
+    assert_equal [technical.id, financial.id], json['risk_categories'].map {|c| c['id']}
+    assert_equal %w(Technical Financial), json['risk_categories'].map {|c| c['name']}
+  end
 end

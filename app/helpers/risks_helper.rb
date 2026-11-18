@@ -3,6 +3,26 @@ module RisksHelper
   include QueriesHelper
   include RedmineRisks::Export::PDF::RisksPdfHelper
 
+  RISK_CATEGORY_SEPARATOR = '──────────'
+
+  # Splits the categories into the system categories (and their project
+  # overrides) and the categories specific to a project
+  def partition_risk_categories(categories)
+    categories.partition {|category| !category.project_specific? }
+  end
+
+  # Options for a category select, with a disabled separator between the
+  # system categories and the categories specific to the project
+  def risk_category_options_for_select(categories, selected = nil)
+    system_categories, project_categories = partition_risk_categories(categories)
+    options = [options_from_collection_for_select(system_categories, :id, :name, selected)]
+    if system_categories.any? && project_categories.any?
+      options << content_tag('option', RISK_CATEGORY_SEPARATOR, :disabled => true, :class => 'separator')
+    end
+    options << options_from_collection_for_select(project_categories, :id, :name, selected)
+    safe_join(options)
+  end
+
   def find_risk
     risk_id = params[:risk_id] || params[:id]
 

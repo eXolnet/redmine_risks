@@ -30,11 +30,20 @@ class RiskDashboardsController < ApplicationController
       limit(TOP_RISKS_LIMIT).
       to_a
 
+    # Project overrides are counted with their system category
     category_counts = open_scope.group(:category_id).count
-    categories = RiskCategory.where(:id => category_counts.keys.compact).sort
-    @category_counts = categories.map {|category| [category, category_counts.delete(category.id)] }
+    categories = RiskCategory.where(:id => category_counts.keys.compact).preload(:parent).index_by(&:id)
+    system_counts = Hash.new(0)
     # Risks without category, or with a category that no longer exists
-    uncategorized_count = category_counts.values.sum
+    uncategorized_count = 0
+    category_counts.each do |category_id, count|
+      if (category = categories[category_id])
+        system_counts[category.parent || category] += count
+      else
+        uncategorized_count += count
+      end
+    end
+    @category_counts = system_counts.keys.sort.map {|category| [category, system_counts[category]] }
     @category_counts << [nil, uncategorized_count] if uncategorized_count > 0
 
     strategy_counts = open_scope.group(:strategy).count
