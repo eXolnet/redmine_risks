@@ -50,6 +50,17 @@ class RiskTest < ActiveSupport::TestCase
     assert_equal "Extreme", Risk.new(:probability => 100, :impact => 100).magnitude
   end
 
+  def test_magnitude_level
+    assert_nil Risk.new(:probability => nil, :impact => 50).magnitude_level
+    assert_nil Risk.new(:probability => 50, :impact => nil).magnitude_level
+    assert_equal 0, Risk.new(:probability => 0, :impact => 0).magnitude_level
+    assert_equal 0, Risk.new(:probability => 100, :impact => 24).magnitude_level
+    assert_equal 1, Risk.new(:probability => 50, :impact => 50).magnitude_level
+    assert_equal 2, Risk.new(:probability => 75, :impact => 75).magnitude_level
+    assert_equal 3, Risk.new(:probability => 100, :impact => 75).magnitude_level
+    assert_equal 3, Risk.new(:probability => 100, :impact => 100).magnitude_level
+  end
+
   def test_assigning_closed_status_should_set_closed_on
     risk = Risk.find(1)
     risk.status = 'closed'

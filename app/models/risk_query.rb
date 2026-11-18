@@ -1,5 +1,31 @@
+# The magnitude is computed from the probability and the impact, so risks are
+# grouped by magnitude level using RiskQuery::MAGNITUDE_LEVEL_STATEMENT.
+class RiskMagnitudeQueryColumn < QueryColumn
+  def groupable?
+    true
+  end
+
+  def group_by_statement
+    RiskQuery::MAGNITUDE_LEVEL_STATEMENT
+  end
+
+  def group_value(object)
+    object.magnitude_level
+  end
+end
+
 class RiskQuery < Query
   include RisksHelper
+
+  # Mirrors Risk#magnitude_level: index of the level in Risk::RISK_MAGNITUDE
+  MAGNITUDE_LEVEL_STATEMENT = begin
+    product = "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)"
+    step = 10_000 / Risk::RISK_MAGNITUDE.count
+    whens = (1...Risk::RISK_MAGNITUDE.count).map {|i| "WHEN #{product} < #{i * step} THEN #{i - 1}"}
+
+    "(CASE WHEN #{Risk.table_name}.impact IS NULL OR #{Risk.table_name}.probability IS NULL THEN NULL " \
+      "#{whens.join(' ')} ELSE #{Risk::RISK_MAGNITUDE.count - 1} END)"
+  end
 
   self.queried_class = Risk
   self.view_permission = :view_risks
@@ -9,11 +35,11 @@ class RiskQuery < Query
     QueryColumn.new(:project, :groupable => "#{Risk.table_name}.project_id", :sortable => "#{Project.table_name}.id"),
     QueryColumn.new(:subject, :sortable => "#{Risk.table_name}.subject"),
     QueryColumn.new(:category, :sortable => "#{RiskCategory.table_name}.position", :default_order => 'desc', :groupable => true),
-    QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc'),
-    QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc'),
-    QueryColumn.new(:magnitude, :sortable => "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)", :default_order => 'desc'),
+    QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc', :groupable => true),
+    QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc', :groupable => true),
+    RiskMagnitudeQueryColumn.new(:magnitude, :sortable => "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)", :default_order => 'desc'),
     QueryColumn.new(:status, :sortable => "#{Risk.table_name}.status"),
-    QueryColumn.new(:strategy, :sortable => "#{Risk.table_name}.strategy"),
+    QueryColumn.new(:strategy, :sortable => "#{Risk.table_name}.strategy", :groupable => true),
     QueryColumn.new(:author, :sortable => lambda {User.fields_for_order_statement("authors")}, :groupable => true),
     QueryColumn.new(:assigned_to, :sortable => lambda {User.fields_for_order_statement}, :groupable => true),
     QueryColumn.new(:created_on, :sortable => "#{Risk.table_name}.created_on", :default_order => 'desc'),

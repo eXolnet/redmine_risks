@@ -181,6 +181,32 @@ class RiskQueryTest < ActiveSupport::TestCase
     end
   end
 
+  def test_risk_levels_should_be_groupable
+    query = build_query
+    %w(probability impact magnitude strategy).each do |name|
+      assert_include name, query.groupable_columns.map {|c| c.name.to_s }
+    end
+  end
+
+  def test_group_by_probability_and_impact_should_count_by_value
+    assert_equal({50 => 1, 25 => 1}, build_query({}, :group_by => 'probability').result_count_by_group)
+    assert_equal({75 => 1, 50 => 1}, build_query({}, :group_by => 'impact').result_count_by_group)
+  end
+
+  def test_group_by_magnitude_should_count_by_level
+    Risk.create!(:project => @project, :author => User.find(1), :subject => 'Unrated', :probability => nil, :impact => nil)
+    Risk.create!(:project => @project, :author => User.find(1), :subject => 'Extreme', :probability => 100, :impact => 100)
+
+    query = build_query({}, :group_by => 'magnitude')
+    assert_equal({3 => 1, 1 => 1, 0 => 1, nil => 1}, query.result_count_by_group)
+
+    risks = query.risks
+    levels = risks.map(&:magnitude_level).uniq
+    assert_equal 4, levels.size, 'Risks of the same level should be contiguous'
+    assert_equal [3, 1, 0], levels.compact
+    assert_equal risks.map(&:magnitude_level), risks.map {|risk| query.group_by_column.group_value(risk)}
+  end
+
   def test_risks_should_preload_last_updated_by_and_last_notes
     risk = Risk.find(1)
     add_journal(risk, User.find(2), 'Visible note')

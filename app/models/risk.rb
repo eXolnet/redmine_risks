@@ -240,14 +240,20 @@ class Risk < ActiveRecord::Base
     end
   end
 
-  def magnitude
+  # Returns the index of the magnitude level in RISK_MAGNITUDE (0 to 3), or nil
+  # when the probability or the impact is unknown. Integer arithmetic is used
+  # so the result matches RiskQuery::MAGNITUDE_LEVEL_STATEMENT exactly.
+  def magnitude_level
     return unless probability && impact
 
-    ratio = (impact / 100.0) * (probability / 100.0)
-    index = (ratio * RISK_MAGNITUDE.count).clamp(0, RISK_MAGNITUDE.count - 1).to_i
-    level = RISK_MAGNITUDE[index]
+    (impact * probability * RISK_MAGNITUDE.count / 10_000).clamp(0, RISK_MAGNITUDE.count - 1)
+  end
 
-    I18n.t(("label_risk_level_" + level).to_sym)
+  def magnitude
+    index = magnitude_level
+    return if index.nil?
+
+    I18n.t(("label_risk_level_" + RISK_MAGNITUDE[index]).to_sym)
   end
 
   def init_journal(user, notes = "")

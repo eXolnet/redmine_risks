@@ -74,6 +74,25 @@ class RisksControllerPermissionsTest < ActionController::TestCase
     assert_select 'table.risks tbody tr.risk', 2
   end
 
+  def test_index_grouped_by_risk_levels_should_display_level_labels
+    {
+      'probability' => ['Medium', 'Low'],
+      'impact' => ['Significant', 'Moderate'],
+      'magnitude' => ['Medium', 'Low'],
+      'strategy' => ['Mitigate', 'Transfer']
+    }.each do |group_by, labels|
+      compatible_request :get, :index, :project_id => 'ecookbook', :set_filter => 1,
+                         :f => ['status'], :op => {'status' => '='}, :v => {'status' => ['open', 'closed']},
+                         :group_by => group_by
+
+      assert_response :success
+      assert_select 'tr.group span.name', 2
+      assert_select 'tr.group span.name', :text => labels.first
+      assert_select 'tr.group span.name', :text => labels.last
+      assert_select 'tr.group span.badge.badge-count.count', :text => '1', :count => 2
+    end
+  end
+
   def test_index_with_invalid_query_should_render_errors
     compatible_request :get, :index, :project_id => 'ecookbook', :set_filter => 1,
                        :f => ['risk_id'], :op => {'risk_id' => '='}, :v => {'risk_id' => ['abc']}
