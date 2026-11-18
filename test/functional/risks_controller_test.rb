@@ -25,12 +25,15 @@ class RisksControllerTest < ActionController::TestCase
     compatible_request :get, :index, :project_id => 'ecookbook'
 
     assert_response :success
+    assert_select 'table.risks tr#risk-1'
+    assert_select 'table.risks tr#risk-2', 0 # closed risks are filtered out by default
   end
 
   def test_get_new
     compatible_request :get, :new, :project_id => 'ecookbook'
 
     assert_response :success
+    assert_select 'form#risk-form[action=?]', '/projects/ecookbook/risks'
   end
 
   def test_post_create
@@ -61,12 +64,14 @@ class RisksControllerTest < ActionController::TestCase
     compatible_request :get, :show, :id => 1
 
     assert_response :success
+    assert_select 'div.subject h3', :text => 'Sit sodales posuere'
   end
 
   def test_get_edit
     compatible_request :get, :edit, :id => 1
 
     assert_response :success
+    assert_select 'input[name=?][value=?]', 'risk[subject]', 'Sit sodales posuere'
   end
 
   def test_put_update
