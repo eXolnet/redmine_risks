@@ -39,6 +39,25 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_match 'Strategy', @response.body
   end
 
+  def test_get_risks_many_should_link_edit_to_bulk_edit
+    compatible_request :get, :index, :ids => [1, 2], :back_url => '/projects/ecookbook/risks'
+
+    assert_response :success
+    assert_select 'a.icon-edit:not(.disabled)[href=?]',
+                  '/risks/bulk_edit?back_url=%2Fprojects%2Fecookbook%2Frisks&ids%5B%5D=1&ids%5B%5D=2'
+  end
+
+  def test_get_risks_many_without_edit_permission_should_disable_edit
+    @request.session[:user_id] = 2
+    Role.find(1).add_permission!(:view_risks)
+    Role.find(1).remove_permission!(:edit_risks)
+
+    compatible_request :get, :index, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'a.icon-edit.disabled'
+  end
+
   def test_get_risks_single_should_list_menu_entries
     category = RiskCategory.create!(:name => 'Technical')
 
@@ -66,11 +85,11 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_select 'a.icon-copy-link[data-clipboard-text=?]', 'http://test.host/risks/1'
   end
 
-  def test_get_risks_many_should_list_status_and_copy_link_without_edit
+  def test_get_risks_many_should_list_bulk_edit_status_and_copy_link
     compatible_request :get, :index, :ids => [1, 2]
 
     assert_response :success
-    assert_select 'a.icon-edit', 0
+    assert_select 'a.icon-edit[href^=?]', '/risks/bulk_edit'
     assert_select 'a.submenu', :text => 'Status'
     assert_select 'a.icon-copy-link[data-clipboard-text=?]', 'http://test.host/projects/ecookbook/risks?risk_id=1%2C2&set_filter=1'
   end

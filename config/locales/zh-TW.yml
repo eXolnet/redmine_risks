@@ -41,6 +41,8 @@ zh-TW:
   notice_risk_successful_create: "風險已建立"
   notice_risk_successful_update: "更新成功"
   notice_risk_successful_delete: "刪除成功"
+  notice_failed_to_save_risks: "%{total} 個選取的風險中，有 %{count} 個無法儲存：%{ids}。"
+  label_bulk_edit_selected_risks: "編輯選取的風險"
   error_risk_issue_not_linkable: "無法將此議題關聯至此風險。"
   error_risk_not_linkable: "無法將此風險關聯至此議題。"
   label_related_risks: "相關風險"

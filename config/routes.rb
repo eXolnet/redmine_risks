@@ -16,6 +16,7 @@ resources :risks, :except => [:index, :new, :create] do
   delete 'issues/:issue_id', :to => 'risk_issues#destroy'
 
   collection do
+    match 'bulk_edit', :via => [:get, :post]
     post 'bulk_update'
   end
 end

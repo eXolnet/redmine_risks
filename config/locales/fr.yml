@@ -41,6 +41,8 @@ fr:
   notice_risk_successful_create: "Risque créé avec succès."
   notice_risk_successful_update: "Risque mis à jour avec succès."
   notice_risk_successful_delete: "Risque supprimé avec succès."
+  notice_failed_to_save_risks: "%{count} risque(s) sur les %{total} sélectionnés n'ont pas pu être mis à jour : %{ids}."
+  label_bulk_edit_selected_risks: "Modifier les risques sélectionnés"
   error_risk_issue_not_linkable: "La demande ne peut pas être liée à ce risque."
   error_risk_not_linkable: "Le risque ne peut pas être lié à cette demande."
   label_related_risks: "Risques liés"

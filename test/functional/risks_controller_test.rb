@@ -220,4 +220,122 @@ class RisksControllerTest < ActionController::TestCase
     assert_redirected_to '/'
     assert_equal ['accept'], Risk.where(:id => [1, risk.id]).distinct.pluck(:strategy)
   end
+
+  def test_get_bulk_edit
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'ul#bulk-selection li', 2
+    assert_select 'form#bulk_edit_form[action=?]', '/risks/bulk_update' do
+      assert_select 'input[name=?][value=?]', 'ids[]', '1'
+      assert_select 'input[name=?][value=?]', 'ids[]', '2'
+      %w(status category_id probability impact strategy assigned_to_id).each do |field|
+        assert_select "select[name=?]", "risk[#{field}]" do
+          assert_select 'option:first-child[value=""]', :text => '(No change)'
+        end
+      end
+      assert_select 'select[name=?] option[value=?]', 'risk[strategy]', 'none'
+      assert_select 'select[name=?] option[value=?]', 'risk[status]', 'closed'
+      assert_select 'textarea[name=?]', 'notes'
+    end
+  end
+
+  def test_get_bulk_edit_should_display_bulk_editable_custom_fields
+    field = IssueCustomField.create!(:name => 'Risk owner team', :field_format => 'string', :is_for_all => true)
+    Risk.any_instance.stubs(:available_custom_fields).returns([field])
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'input[name=?]', "risk[custom_field_values][#{field.id}]"
+  end
+
+  def test_get_bulk_edit_with_unknown_risk_should_return_404
+    compatible_request :get, :bulk_edit, :ids => [999]
+
+    assert_response 404
+  end
+
+  def test_post_bulk_update_should_leave_unchanged_fields_untouched
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {
+        :status => '',
+        :category_id => '',
+        :probability => '',
+        :impact => '',
+        :strategy => 'accept',
+        :assigned_to_id => '',
+      }
+
+    assert_redirected_to '/projects/ecookbook/risks'
+
+    risk1 = Risk.find(1)
+    assert_equal 'open', risk1.status
+    assert_equal 1, risk1.category_id
+    assert_equal 25, risk1.probability
+    assert_equal 50, risk1.impact
+    assert_equal 1, risk1.assigned_to_id
+    assert_equal 'accept', risk1.strategy
+
+    risk2 = Risk.find(2)
+    assert_equal 'closed', risk2.status
+    assert_equal 50, risk2.probability
+    assert_equal 75, risk2.impact
+    assert_equal 'accept', risk2.strategy
+  end
+
+  def test_post_bulk_update_should_change_status_assignee_and_category
+    category = RiskCategory.create!(:name => 'Technical')
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:status => 'rejected', :assigned_to_id => 'none', :category_id => category.id}
+
+    Risk.where(:id => [1, 2]).each do |risk|
+      assert_equal 'rejected', risk.status
+      assert_not_nil risk.closed_on
+      assert_nil risk.assigned_to_id
+      assert_equal category.id, risk.category_id
+    end
+  end
+
+  def test_post_bulk_update_should_create_one_journal_per_risk
+    assert_difference 'Journal.where(:journalized_type => "Risk").count', 2 do
+      compatible_request :post, :bulk_update, :ids => [1, 2], :notes => 'Revue des risques', :risk => {:impact => 100}
+    end
+
+    [1, 2].each do |id|
+      journal = Journal.where(:journalized_type => 'Risk', :journalized_id => id).last
+      assert_equal 'Revue des risques', journal.notes
+      assert_equal 1, journal.user_id
+      assert journal.details.any? {|d| d.prop_key == 'impact' && d.value == '100'}
+    end
+  end
+
+  def test_post_bulk_update_should_update_custom_fields
+    field = IssueCustomField.create!(:name => 'Risk owner team', :field_format => 'string', :is_for_all => true)
+    Risk.any_instance.stubs(:available_custom_fields).returns([field])
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:custom_field_values => {field.id.to_s => 'Ops'}}
+
+    assert_redirected_to '/projects/ecookbook/risks'
+    assert_equal ['Ops', 'Ops'],
+      CustomValue.where(:customized_type => 'Risk', :customized_id => [1, 2], :custom_field_id => field.id).pluck(:value)
+  end
+
+  def test_post_bulk_update_should_report_unsaved_risks_without_blocking_others
+    Risk.find(2).update_column(:subject, '')
+
+    assert_difference 'Journal.where(:journalized_type => "Risk").count', 1 do
+      compatible_request :post, :bulk_update, :ids => [1, 2], :notes => 'Bulk', :risk => {:strategy => 'accept'}
+    end
+
+    assert_response :success
+    assert_select '#errorExplanation', :text => /1 risk\(s\) on 2 selected could not be saved: #2/
+    assert_select 'ul#bulk-selection li', 1
+    assert_select 'input[name=?][value=?]', 'ids[]', '2'
+    assert_select 'select[name=?] option[value=?][selected=selected]', 'risk[strategy]', 'accept'
+    assert_equal 'accept', Risk.find(1).strategy
+    assert_equal 'transfer', Risk.find(2).strategy
+  end
 end
