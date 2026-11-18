@@ -439,14 +439,30 @@ class RisksControllerTest < ActionController::TestCase
     end
   end
 
-  def test_get_bulk_edit_should_display_bulk_editable_custom_fields
-    field = IssueCustomField.create!(:name => 'Risk owner team', :field_format => 'string', :is_for_all => true)
-    Risk.any_instance.stubs(:available_custom_fields).returns([field])
+  def test_get_bulk_edit_should_display_risk_custom_fields
+    string = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    list = RiskCustomField.create!(:name => 'Source', :field_format => 'list', :possible_values => ['Internal', 'Vendor'])
 
     compatible_request :get, :bulk_edit, :ids => [1, 2]
 
     assert_response :success
-    assert_select 'input[name=?]', "risk[custom_field_values][#{field.id}]"
+    assert_select 'form#bulk_edit_form' do
+      assert_select 'input[type=text][name=?]', "risk[custom_field_values][#{string.id}]"
+      assert_select 'select[name=?]', "risk[custom_field_values][#{list.id}]" do
+        assert_select 'option[value=""]', :text => '(No change)'
+        assert_select 'option[value=?]', '__none__'
+        assert_select 'option[value=?]', 'Vendor'
+      end
+    end
+  end
+
+  def test_get_bulk_edit_should_display_full_width_custom_fields
+    field = RiskCustomField.create!(:name => 'Context', :field_format => 'text', :full_width_layout => '1', :text_formatting => 'full')
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'textarea[name=?].wiki-edit', "risk[custom_field_values][#{field.id}]"
   end
 
   def test_get_bulk_edit_with_unknown_risk_should_return_404
@@ -510,16 +526,54 @@ class RisksControllerTest < ActionController::TestCase
     end
   end
 
-  def test_post_bulk_update_should_update_custom_fields
-    field = IssueCustomField.create!(:name => 'Risk owner team', :field_format => 'string', :is_for_all => true)
-    Risk.any_instance.stubs(:available_custom_fields).returns([field])
+  def test_post_bulk_update_should_update_custom_fields_and_journalize_them
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
 
-    compatible_request :post, :bulk_update, :ids => [1, 2],
-      :risk => {:custom_field_values => {field.id.to_s => 'Ops'}}
+    assert_difference 'Journal.where(:journalized_type => "Risk").count', 2 do
+      compatible_request :post, :bulk_update, :ids => [1, 2],
+        :risk => {:custom_field_values => {field.id.to_s => 'Ops'}}
+    end
 
     assert_redirected_to '/projects/ecookbook/risks'
-    assert_equal ['Ops', 'Ops'],
-      CustomValue.where(:customized_type => 'Risk', :customized_id => [1, 2], :custom_field_id => field.id).pluck(:value)
+    [1, 2].each do |id|
+      assert_equal 'Ops', Risk.find(id).custom_field_value(field)
+      detail = Journal.where(:journalized_type => 'Risk', :journalized_id => id).last.details.first
+      assert_equal 'cf', detail.property
+      assert_equal field.id.to_s, detail.prop_key
+      assert_equal 'Ops', detail.value
+    end
+  end
+
+  def test_post_bulk_update_should_leave_custom_fields_with_no_change_untouched
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    Risk.find(1).tap {|r| r.custom_field_values = {field.id => 'Ops'}; r.save!}
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:strategy => 'accept', :custom_field_values => {field.id.to_s => ''}}
+
+    assert_equal 'Ops', Risk.find(1).custom_field_value(field)
+    assert_equal 'accept', Risk.find(1).strategy
+  end
+
+  def test_post_bulk_update_should_clear_custom_field_with_none
+    field = RiskCustomField.create!(:name => 'Source', :field_format => 'list', :possible_values => ['Internal', 'Vendor'])
+    [1, 2].each {|id| Risk.find(id).tap {|r| r.custom_field_values = {field.id => 'Vendor'}; r.save!}}
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:custom_field_values => {field.id.to_s => '__none__'}}
+
+    assert_equal ['', ''], [1, 2].map {|id| Risk.find(id).custom_field_value(field).to_s}
+  end
+
+  def test_post_bulk_update_with_invalid_custom_field_value_should_report_errors
+    field = RiskCustomField.create!(:name => 'Score', :field_format => 'int')
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:custom_field_values => {field.id.to_s => 'abc'}}
+
+    assert_response :success
+    assert_select '#errorExplanation li', :text => /Score is not a number/
+    assert_select "input[name=?][value=?]", "risk[custom_field_values][#{field.id}]", 'abc'
   end
 
   def test_post_bulk_update_should_report_unsaved_risks_without_blocking_others

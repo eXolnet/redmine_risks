@@ -97,11 +97,14 @@
 </div>
 </div>
 
-<% if @custom_fields.present? %>
+<% custom_fields_full_width = @custom_fields.select(&:full_width_layout?) %>
+<% custom_fields = @custom_fields - custom_fields_full_width %>
+
+<% if custom_fields.present? %>
 <div class="splitcontent">
   <div class="splitcontentleft">
-  <% split_on = (@custom_fields.size / 2.0).ceil - 1 %>
-  <% @custom_fields.each_with_index do |custom_field, i| %>
+  <% split_on = (custom_fields.size / 2.0).ceil - 1 %>
+  <% custom_fields.each_with_index do |custom_field, i| %>
     <p>
       <label><%= custom_field.name %></label>
       <%= custom_field_tag_for_bulk_edit('risk', custom_field, @risks, @risk_params[:custom_field_values][custom_field.id.to_s]) %>
@@ -112,6 +115,14 @@
   <% end %>
   </div>
 </div>
+<% end %>
+
+<% custom_fields_full_width.each do |custom_field| %>
+  <p>
+    <label><%= custom_field.name %></label>
+    <%= custom_field_tag_for_bulk_edit('risk', custom_field, @risks, @risk_params[:custom_field_values][custom_field.id.to_s]) %>
+  </p>
+  <%= wikitoolbar_for "risk_custom_field_values_#{custom_field.id}", preview_new_risk_path(:project_id => @project || @risks.first.project) if custom_field.full_text_formatting? %>
 <% end %>
 </fieldset>
 
