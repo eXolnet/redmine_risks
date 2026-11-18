@@ -1,6 +1,30 @@
 <ul>
   <%= call_hook(:view_risks_context_menu_start, {:risks => @risks, :can => @can, :back => @back }) %>
 
+  <% if @risk -%>
+    <li>
+      <%= context_menu_link sprite_icon('edit', l(:button_edit)), edit_risk_path(@risk),
+                            :class => 'icon icon-edit',
+                            :disabled => !@can[:edit] %>
+    </li>
+  <% end -%>
+
+  <% if @safe_attributes.include?('status') -%>
+    <li class="folder">
+      <a href="#" class="submenu"><%= l(:field_status) %></a>
+      <ul>
+        <% Risk::RISK_STATUS.each do |s| -%>
+          <li>
+            <%= context_menu_link format_risk_status(s), bulk_update_risks_path(:ids => @risk_ids, :risk => {'status' => s}, :back_url => @back),
+                                  :method => :post,
+                                  :selected => (@risk && s == @risk.status),
+                                  :disabled => !@can[:edit] %>
+          </li>
+        <% end -%>
+      </ul>
+    </li>
+  <% end -%>
+
   <% if @safe_attributes.include?('assigned_to_id') && @assignables.present? -%>
     <li class="folder">
       <a href="#" class="submenu"><%= l(:field_assigned_to) %></a>
@@ -116,6 +140,12 @@
         </li>
       </ul>
     </li>
+  <% end -%>
+
+  <% if @risk -%>
+    <li><%= copy_object_url_link(risk_url(@risk)) %></li>
+  <% elsif @projects.size == 1 -%>
+    <li><%= copy_object_url_link(project_risks_url(@projects.first, :set_filter => 1, :risk_id => @risk_ids.join(','))) %></li>
   <% end -%>
 
   <li>
