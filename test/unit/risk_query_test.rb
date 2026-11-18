@@ -204,9 +204,7 @@ class RiskQueryTest < ActiveSupport::TestCase
     levels = risks.map(&:magnitude_level).uniq
     assert_equal 4, levels.size, 'Risks of the same level should be contiguous'
     assert_equal [3, 1, 0], levels.compact
-    risks.each do |risk|
-      assert_equal risk.magnitude_level, query.group_by_column.group_value(risk)
-    end
+    assert_equal risks.map(&:magnitude_level), risks.map {|risk| query.group_by_column.group_value(risk)}
   end
 
   def test_risks_should_preload_last_updated_by_and_last_notes
