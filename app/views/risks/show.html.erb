@@ -85,6 +85,8 @@
 
 <%= render :partial => 'action_menu' %>
 
+<div style="clear: both;"></div>
+
 <% other_formats_links do |f| %>
   <%= f.link_to 'PDF' %>
   <%= f.link_to 'Atom', :url => {:key => User.current.atom_key} %>

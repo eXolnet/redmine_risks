@@ -224,6 +224,8 @@ class RisksControllerExportTest < ActionController::TestCase
       assert_select 'a.pdf[href=?]', '/risks/1.pdf'
       assert_select 'a.atom[href=?]', "/risks/1.atom?key=#{User.find(1).atom_key}"
     end
+    # Displayed below the floating Edit / Delete buttons, like on the issue page
+    assert_select 'div.contextual + div[style=?] + p.other-formats', 'clear: both;'
   end
 
   # Atom
