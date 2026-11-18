@@ -61,6 +61,16 @@ class RiskTest < ActiveSupport::TestCase
     assert_equal 3, Risk.new(:probability => 100, :impact => 100).magnitude_level
   end
 
+  def test_magnitude_level_for
+    assert_nil Risk.magnitude_level_for(nil, 50)
+    assert_nil Risk.magnitude_level_for(50, nil)
+
+    [0, 25, 50, 75, 100].product([0, 24, 25, 50, 75, 100]).each do |probability, impact|
+      assert_equal Risk.new(:probability => probability, :impact => impact).magnitude_level,
+                   Risk.magnitude_level_for(probability, impact)
+    end
+  end
+
   def test_assigning_closed_status_should_set_closed_on
     risk = Risk.find(1)
     risk.status = 'closed'

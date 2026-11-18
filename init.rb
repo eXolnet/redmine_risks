@@ -16,7 +16,7 @@ Redmine::Plugin.register :redmine_risks do
   menu :project_menu, :new_risk, { :controller => 'risks', :action => 'new' }, :caption => :label_new_risk, :after => :new_wiki_sub, :param => :project_id, :parent => :new_object
 
   project_module :risks do
-    permission :view_risks,            { :risks => [:index, :show] }, :read => true
+    permission :view_risks,            { :risks => [:index, :show], :risk_dashboards => [:show] }, :read => true
     permission :add_risks,             { :risks => [:new, :create, :commit] }
     permission :edit_risks,            { :risks => [:edit, :update, :bulk_edit, :bulk_update] }
     permission :delete_risks,          { :risks => [:destroy] }, :require => :member

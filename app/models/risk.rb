@@ -298,6 +298,11 @@ class Risk < ApplicationRecord
   # when the probability or the impact is unknown. Integer arithmetic is used
   # so the result matches RiskQuery::MAGNITUDE_LEVEL_STATEMENT exactly.
   def magnitude_level
+    self.class.magnitude_level_for(probability, impact)
+  end
+
+  # Returns the magnitude level index for the given probability and impact (0 to 100)
+  def self.magnitude_level_for(probability, impact)
     return unless probability && impact
 
     (impact * probability * RISK_MAGNITUDE.count / 10_000).clamp(0, RISK_MAGNITUDE.count - 1)

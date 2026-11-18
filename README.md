@@ -50,6 +50,17 @@ Enable the "Risks" module on a project and grant the risk permissions (view, add
 
 Custom fields can be added to risks in *Administration » Custom fields » Risks*. They are displayed in the risk form and page, can be used as columns, filters (when "Used as a filter" is checked) and grouping criteria in the risk list, are recorded in the history and can be restricted to some roles.
 
+### Risk dashboard
+
+The "Risk dashboard" link of the risk list (`/projects/:project_id/risks/dashboard`, `view_risks` permission) shows:
+
+- a 5 × 5 probability × impact matrix with the number of open risks per cell, colored by magnitude; each cell links to the risk list filtered on that probability and impact;
+- the number of open, closed and rejected risks;
+- the top 5 open risks by magnitude;
+- the open risks by category and by strategy.
+
+Themes can adjust the magnitude colors by defining the `--risk-color-magnitude-low`, `--risk-color-magnitude-medium`, `--risk-color-magnitude-high` and `--risk-color-magnitude-extreme` CSS variables as RGB triplets (eg. `46, 160, 67`).
+
 ### REST API
 
 When the REST API is enabled (*Administration » Settings » API*), risks can be managed with the same authentication methods as the core Redmine API (API key, HTTP Basic). Every endpoint supports the `json` and `xml` formats.

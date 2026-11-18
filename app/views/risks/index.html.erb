@@ -1,4 +1,5 @@
 <div class="contextual">
+  <%= link_to sprite_icon('stats', l(:label_risk_dashboard)), project_risks_dashboard_path(@project), :class => 'icon icon-stats' %>
   <% if User.current.allowed_to?(:add_risks, @project) %>
     <%= link_to l(:label_new_risk), new_project_risk_path(@project), :class => 'icon icon-add' %>
   <% end %>

@@ -64,6 +64,31 @@ class RiskQueryTest < ActiveSupport::TestCase
     assert_equal [2], risk_ids(build_query('strategy' => ['=', ['transfer']]))
   end
 
+  def test_probability_and_impact_filters_should_list_risk_levels
+    query = build_query
+
+    assert_equal %w(0 25 50 75 100), query.available_filters['probability'][:values].map(&:last)
+    assert_equal 'Low', query.available_filters['probability'][:values][1].first
+    assert_equal %w(0 25 50 75 100), query.available_filters['impact'][:values].map(&:last)
+    assert_equal 'Significant', query.available_filters['impact'][:values][3].first
+  end
+
+  def test_probability_filter
+    assert_equal [1], risk_ids(build_query('probability' => ['=', ['25']]))
+    assert_equal [1, 2], risk_ids(build_query('probability' => ['=', ['25', '50']]))
+    assert_equal [2], risk_ids(build_query('probability' => ['!', ['25']]))
+  end
+
+  def test_impact_filter
+    assert_equal [2], risk_ids(build_query('impact' => ['=', ['75']]))
+    assert_equal [], risk_ids(build_query('impact' => ['=', ['100']]))
+  end
+
+  def test_probability_and_impact_filters_combined
+    assert_equal [1], risk_ids(build_query('probability' => ['=', ['25']], 'impact' => ['=', ['50']]))
+    assert_equal [], risk_ids(build_query('probability' => ['=', ['25']], 'impact' => ['=', ['75']]))
+  end
+
   def test_updated_by_filter
     add_journal(Risk.find(1), User.find(2), 'Note by jsmith')
     add_journal(Risk.find(2), User.find(3), 'Note by dlopper')

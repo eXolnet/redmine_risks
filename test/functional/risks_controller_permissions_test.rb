@@ -93,6 +93,24 @@ class RisksControllerPermissionsTest < ActionController::TestCase
     end
   end
 
+  def test_index_should_link_to_the_dashboard
+    compatible_request :get, :index, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select '.contextual a.icon-stats[href=?]', '/projects/ecookbook/risks/dashboard'
+  end
+
+  def test_index_filtered_by_probability_and_impact
+    compatible_request :get, :index, :project_id => 'ecookbook', :set_filter => 1,
+                       :f => ['status', 'probability', 'impact'],
+                       :op => {'status' => '=', 'probability' => '=', 'impact' => '='},
+                       :v => {'status' => ['open', 'closed'], 'probability' => ['50'], 'impact' => ['75']}
+
+    assert_response :success
+    assert_select 'table.risks tbody tr.risk', 1
+    assert_select 'tr#risk-2'
+  end
+
   def test_index_with_invalid_query_should_render_errors
     compatible_request :get, :index, :project_id => 'ecookbook', :set_filter => 1,
                        :f => ['risk_id'], :op => {'risk_id' => '='}, :v => {'risk_id' => ['abc']}

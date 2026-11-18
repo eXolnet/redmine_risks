@@ -28,3 +28,144 @@ table.risks td.last_notes {
 #issue-risks .risk > td.assigned_to {
   white-space: nowrap;
 }
+
+/* Risk dashboard
+ *
+ * Redmine does not expose color variables yet: the magnitude colors can be
+ * overridden by a theme through the --risk-magnitude-* variables. Backgrounds
+ * are translucent and texts inherit the theme color so the dashboard reads well
+ * on both light and dark themes.
+ */
+.risk-dashboard {
+  --risk-magnitude-low: var(--risk-color-magnitude-low, 46, 160, 67);
+  --risk-magnitude-medium: var(--risk-color-magnitude-medium, 230, 180, 0);
+  --risk-magnitude-high: var(--risk-color-magnitude-high, 240, 120, 30);
+  --risk-magnitude-extreme: var(--risk-color-magnitude-extreme, 215, 40, 40);
+  --risk-cell-alpha: .35;
+  --risk-border: rgba(128, 128, 128, .35);
+}
+
+.risk-dashboard .magnitude-low {background-color: rgba(var(--risk-magnitude-low), var(--risk-cell-alpha));}
+.risk-dashboard .magnitude-medium {background-color: rgba(var(--risk-magnitude-medium), var(--risk-cell-alpha));}
+.risk-dashboard .magnitude-high {background-color: rgba(var(--risk-magnitude-high), var(--risk-cell-alpha));}
+.risk-dashboard .magnitude-extreme {background-color: rgba(var(--risk-magnitude-extreme), var(--risk-cell-alpha));}
+
+ul.risk-status-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+ul.risk-status-counts li {
+  flex: 1 1 120px;
+  border: 1px solid var(--risk-border);
+  border-radius: 3px;
+}
+ul.risk-status-counts li a {
+  display: block;
+  padding: 8px 12px;
+  color: inherit;
+  text-decoration: none;
+}
+ul.risk-status-counts li a:hover {background-color: rgba(128, 128, 128, .12);}
+ul.risk-status-counts .count {
+  display: block;
+  font-size: 2em;
+  font-weight: bold;
+  line-height: 1.2;
+}
+ul.risk-status-counts .label {opacity: .8;}
+
+.risk-matrix-wrapper {overflow-x: auto;}
+table.risk-matrix {
+  border-collapse: separate;
+  border-spacing: 3px;
+  margin: 0 auto;
+  width: 100%;
+  table-layout: fixed;
+}
+table.risk-matrix caption {
+  caption-side: bottom;
+  font-size: 90%;
+  opacity: .8;
+  padding-top: 4px;
+}
+table.risk-matrix th {
+  font-size: 85%;
+  font-weight: normal;
+  padding: 4px;
+  word-break: break-word;
+}
+table.risk-matrix th.axis {font-style: italic;}
+table.risk-matrix tbody th {text-align: right;}
+table.risk-matrix td {
+  border: 1px solid var(--risk-border);
+  border-radius: 3px;
+  height: 44px;
+  padding: 0;
+  text-align: center;
+}
+table.risk-matrix td a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 44px;
+  color: inherit;
+  font-size: 1.3em;
+  font-weight: bold;
+  text-decoration: none;
+}
+table.risk-matrix td a:hover,
+table.risk-matrix td a:focus {outline: 2px solid currentColor; outline-offset: -2px;}
+table.risk-matrix td.empty {--risk-cell-alpha: .12;}
+
+ul.risk-magnitude-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 90%;
+}
+ul.risk-magnitude-legend .swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  vertical-align: middle;
+  border: 1px solid var(--risk-border);
+  border-radius: 2px;
+  --risk-cell-alpha: .8;
+}
+p.risk-unrated {
+  font-size: 90%;
+  font-style: italic;
+  opacity: .8;
+  text-align: center;
+}
+
+.risk-dashboard .risk-magnitude-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  --risk-cell-alpha: .5;
+}
+
+table.risk-breakdown-table td.name {width: 35%; text-align: left;}
+table.risk-breakdown-table td.bar {text-align: left;}
+table.risk-breakdown-table td.count {width: 15%; text-align: right;}
+table.risk-breakdown-table .risk-bar {
+  display: inline-block;
+  height: 10px;
+  min-width: 2px;
+  border-radius: 2px;
+  background-color: currentColor;
+  opacity: .45;
+  vertical-align: middle;
+}

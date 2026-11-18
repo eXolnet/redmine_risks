@@ -34,6 +34,17 @@ de:
   label_risk_strategy_mitigate: Reduzieren
   label_risk_strategy_transfer: Übertragen
   label_risk_strategy_eliminate: Vermeiden
+  label_risk_dashboard: "Risiko-Dashboard"
+  label_risk_list: "Risikoliste"
+  label_risk_matrix: "Wahrscheinlichkeits-Auswirkungs-Matrix"
+  label_risk_matrix_caption: "Anzahl offener Risiken nach Wahrscheinlichkeit und Auswirkung"
+  label_risk_matrix_cell_title: "Wahrscheinlichkeit: %{probability}, Auswirkung: %{impact}, Ausmaß: %{magnitude} (%{count} offene(s) Risiko/Risiken)"
+  label_risk_top_risks: "Die %{count} größten offenen Risiken nach Ausmaß"
+  label_risk_by_category: "Offene Risiken nach Kategorie"
+  label_risk_by_strategy: "Offene Risiken nach Strategie"
+  label_risk_unrated_count:
+    one: "1 offenes Risiko ist in der Matrix nicht bewertet"
+    other: "%{count} offene Risiken sind in der Matrix nicht bewertet"
   default_risk_category_internal: Intern
   default_risk_category_external: Extern
   default_risk_category_technical: Technisch
