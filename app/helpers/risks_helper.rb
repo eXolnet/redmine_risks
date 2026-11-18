@@ -1,6 +1,7 @@
 module RisksHelper
   include IssuesHelper
   include QueriesHelper
+  include RedmineRisks::Export::PDF::RisksPdfHelper
 
   def find_risk
     risk_id = params[:risk_id] || params[:id]
@@ -161,6 +162,23 @@ module RisksHelper
       item.lessons? ? content_tag('div', textilizable(item, :lessons), :class => "wiki") : ''
     else
       column_value_without_risks(column, item, value)
+    end
+  end
+
+  # Risk levels, statuses and strategies are stored as raw values, so they are
+  # translated like in the HTML list before being exported (CSV and PDF).
+  def csv_value(column, object, value)
+    case column.name
+    when :probability
+      format_risk_probability(value).to_s
+    when :impact
+      format_risk_impact(value).to_s
+    when :status
+      value.blank? ? '' : format_risk_status(value)
+    when :strategy
+      format_risk_strategy(value).to_s
+    else
+      super
     end
   end
 
