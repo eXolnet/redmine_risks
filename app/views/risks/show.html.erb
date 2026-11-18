@@ -28,6 +28,7 @@
 
       rows.left l(:field_strategy), (@risk.strategy.present? ? format_risk_strategy(@risk.strategy) : "-"), :class => 'strategy'
     end %>
+    <%= render_half_width_custom_fields_rows(@risk) %>
   </div>
 
   <% if @risk.description? -%>
@@ -44,6 +45,8 @@
       </div>
     </div>
   <% end -%>
+
+  <%= render_full_width_custom_fields_rows(@risk) %>
 
   <% if @risk.treatments? %>
     <hr />

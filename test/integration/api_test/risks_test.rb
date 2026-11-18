@@ -288,4 +288,97 @@ class Redmine::ApiTest::RisksTest < Redmine::ApiTest::Base
     assert_include({'id' => category.id, 'name' => 'Technical', 'is_default' => false, 'active' => true},
                    json['risk_categories'])
   end
+
+
+  test "GET /risks/:id.json should include visible custom fields" do
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    hidden = RiskCustomField.create!(:name => 'Hidden', :field_format => 'string', :visible => false, :role_ids => [2])
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops', hidden.id.to_s => 'Secret'}
+    risk.save!
+
+    get '/risks/1.json', :headers => credentials('jsmith')
+
+    assert_response :success
+    json = ActiveSupport::JSON.decode(response.body)
+    assert_equal [{'id' => field.id, 'name' => 'Owner team', 'value' => 'Ops'}], json['risk']['custom_fields']
+  end
+
+  test "GET /projects/:project_id/risks.json should include custom fields" do
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    get '/projects/1/risks.json', :headers => credentials('jsmith')
+
+    assert_response :success
+    json = ActiveSupport::JSON.decode(response.body)
+    assert_equal [{'id' => field.id, 'name' => 'Owner team', 'value' => 'Ops'}], json['risks'].first['custom_fields']
+  end
+
+  test "GET /projects/:project_id/risks.json should filter on custom fields" do
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string', :is_filter => true)
+    risk = Risk.find(2)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    get "/projects/1/risks.json?status=open%7Cclosed%7Crejected&cf_#{field.id}=Ops", :headers => credentials('jsmith')
+
+    assert_response :success
+    json = ActiveSupport::JSON.decode(response.body)
+    assert_equal [2], json['risks'].map {|r| r['id']}
+  end
+
+  test "POST /projects/:project_id/risks.json should accept custom fields" do
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    assert_difference 'Risk.count' do
+      post '/projects/1/risks.json',
+           :params => {:risk => {:subject => 'API risk', :custom_fields => [{:id => field.id, :value => 'Ops'}]}},
+           :headers => credentials('jsmith')
+    end
+
+    assert_response :created
+    assert_equal 'Ops', Risk.order(:id).last.custom_field_value(field)
+  end
+
+  test "POST /projects/:project_id/risks.json without a required custom field should return errors" do
+    RiskCustomField.create!(:name => 'Owner team', :field_format => 'string', :is_required => true)
+
+    assert_no_difference 'Risk.count' do
+      post '/projects/1/risks.json', :params => {:risk => {:subject => 'API risk'}}, :headers => credentials('jsmith')
+    end
+
+    assert_response 422
+    json = ActiveSupport::JSON.decode(response.body)
+    assert_include "Owner team #{::I18n.t('activerecord.errors.messages.blank')}", json['errors']
+  end
+
+  test "PUT /risks/:id.json should update custom fields and journalize the change" do
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    put '/risks/1.json',
+        :params => {:risk => {:custom_fields => [{:id => field.id, :value => 'Ops'}]}},
+        :headers => credentials('jsmith')
+
+    assert_response :no_content
+    assert_equal 'Ops', Risk.find(1).custom_field_value(field)
+
+    get '/risks/1.json?include=journals', :headers => credentials('jsmith')
+    json = ActiveSupport::JSON.decode(response.body)
+    detail = json['risk']['journals'].last['details'].first
+    assert_equal({'property' => 'cf', 'name' => field.id.to_s, 'old_value' => nil, 'new_value' => 'Ops'}, detail)
+  end
+
+  test "PUT /risks/:id.json should ignore custom fields not visible by the user" do
+    field = RiskCustomField.create!(:name => 'Hidden', :field_format => 'string', :visible => false, :role_ids => [2])
+
+    put '/risks/1.json',
+        :params => {:risk => {:subject => 'Updated', :custom_fields => [{:id => field.id, :value => 'Secret'}]}},
+        :headers => credentials('jsmith')
+
+    assert_response :no_content
+    assert_nil Risk.find(1).custom_field_value(field)
+  end
 end
