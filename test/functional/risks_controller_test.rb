@@ -34,6 +34,7 @@ class RisksControllerTest < ActionController::TestCase
 
     assert_response :success
     assert_select 'form#risk-form[action=?]', '/projects/ecookbook/risks'
+    assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
   end
 
   def test_post_create
@@ -437,6 +438,14 @@ class RisksControllerTest < ActionController::TestCase
       assert_select 'select[name=?] option[value=?]', 'risk[status]', 'closed'
       assert_select 'textarea[name=?]', 'notes'
     end
+  end
+
+  def test_get_edit_and_bulk_edit_should_label_assignee_consistently
+    compatible_request :get, :edit, :id => 1
+    assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+    assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
   end
 
   def test_get_bulk_edit_should_display_risk_custom_fields
