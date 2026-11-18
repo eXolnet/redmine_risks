@@ -14,6 +14,20 @@ class RiskCategory < Enumeration
     project_id.present? && parent_id.nil?
   end
 
+  # SQL expression sorting the categories specific to a project after the
+  # system categories (and their overrides)
+  def self.project_specific_order_sql
+    t = table_name
+    "CASE WHEN #{t}.project_id IS NOT NULL AND #{t}.parent_id IS NULL THEN 1 ELSE 0 END"
+  end
+
+  # The categories specific to a project come after the system categories
+  def <=>(other)
+    return super unless other.is_a?(RiskCategory)
+
+    [project_specific? ? 1 : 0, position.to_i, id.to_i] <=> [other.project_specific? ? 1 : 0, other.position.to_i, other.id.to_i]
+  end
+
   # Risks using this category or one of its project overrides
   def objects
     Risk.where(:category_id => self_and_descendants(1).map(&:id))

@@ -16,7 +16,7 @@
 <% else %>
 <%= form_tag(project_risk_categories_path(@project), :method => :put, :class => "tabular", :id => 'project-risk-categories-form') do %>
 
-<table class="list">
+<table class="list risk-categories">
   <thead><tr>
     <th><%= l(:field_name) %></th>
     <th><%= l(:field_risk_category_system) %></th>
@@ -27,33 +27,23 @@
     <th></th>
   </tr></thead>
 
-  <% categories.each do |enumeration| %>
-  <%= fields_for "enumerations[#{enumeration.id}]", enumeration do |ff| %>
-  <tr id="risk-category-<%= enumeration.id %>" class="<%= enumeration.project_specific? ? 'project-specific' : 'system' %>">
-    <td class="name">
-      <%= ff.hidden_field :parent_id, :value => enumeration.id unless enumeration.project %>
-      <%= enumeration %>
-    </td>
-    <td class="tick"><%= checked_image !enumeration.project_specific? %></td>
-    <% enumeration.custom_field_values.each do |value| %>
-    <td>
-      <%= custom_field_tag "enumerations[#{enumeration.id}]", value %>
-    </td>
+  <% system_categories, project_categories = categories.partition {|c| !c.project_specific? } %>
+  <tbody class="system-categories">
+    <% system_categories.each do |enumeration| %>
+    <%= render :partial => 'project_risk_categories/row', :locals => {:enumeration => enumeration} %>
     <% end %>
-    <td>
-      <%= ff.check_box :active, :class => 'enumerations_active' %>
-    </td>
-    <td class="buttons">
-      <% if enumeration.project_specific? %>
-        <%= link_to sprite_icon('edit', l(:button_edit)), edit_project_risk_category_path(@project, enumeration), :class => 'icon icon-edit' %>
-        <%= delete_link project_risk_category_path(@project, enumeration) %>
-      <% end %>
-    </td>
-  </tr>
-  <% end %>
-  <% end %>
+  </tbody>
+  <tbody class="project-specific-categories">
+    <% project_categories.each do |enumeration| %>
+    <%= render :partial => 'project_risk_categories/row', :locals => {:enumeration => enumeration} %>
+    <% end %>
+  </tbody>
 </table>
 
 <%= submit_tag l(:button_save) %>
 <% end %>
+<% end %>
+
+<%= javascript_tag do %>
+  $(function() { $("table.risk-categories tbody.project-specific-categories").positionedItems(); });
 <% end %>

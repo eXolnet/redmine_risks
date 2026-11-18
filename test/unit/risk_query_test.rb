@@ -373,4 +373,15 @@ class RiskQueryTest < ActiveSupport::TestCase
     query = build_query('status' => ['*', ['']], 'category_id' => ['=', [regulatory.id.to_s]])
     assert_equal [1], query.risks.map(&:id)
   end
+
+  def test_sort_by_category_should_put_project_specific_categories_after_system_categories
+    low = RiskCategory.create!(:name => 'Low', :position => 1)
+    high = RiskCategory.create!(:name => 'High', :position => 2)
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory') # position 1 in the project
+    Risk.find(1).update_column(:category_id, regulatory.id)
+    Risk.find(2).update_column(:category_id, high.id)
+    risk = Risk.create!(:project => @project, :author => User.find(1), :subject => 'Low risk', :category_id => low.id)
+
+    assert_equal [risk.id, 2, 1], build_query({'status' => ['*', ['']]}, :sort => [['category', 'asc']]).risks.map(&:id)
+  end
 end

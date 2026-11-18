@@ -30,10 +30,7 @@ module RedmineRisks
             scope = scope.where("#{t}.id NOT IN (?)", overridden_category_ids)
           end
           scope = scope.active unless include_inactive
-          scope.reorder(
-            Arel.sql("CASE WHEN #{t}.project_id IS NOT NULL AND #{t}.parent_id IS NULL THEN 1 ELSE 0 END"),
-            "#{t}.position", "#{t}.id"
-          )
+          scope.reorder(Arel.sql(RiskCategory.project_specific_order_sql), "#{t}.position", "#{t}.id")
         end
 
         # Creates or updates the project risk categories. Returns false, and

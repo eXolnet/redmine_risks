@@ -291,6 +291,36 @@ class ProjectRiskCategoriesControllerTest < ActionController::TestCase
     compatible_request :get, :new, :project_id => 'ecookbook'
     assert_response :forbidden
   end
+
+  def test_xhr_put_update_should_move_project_specific_category
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+    compliance = @project.risk_categories.create!(:name => 'Compliance')
+
+    compatible_xhr_request :put, :update, :project_id => 'ecookbook', :id => compliance.id,
+                           :risk_category => {:position => 1}, :format => 'js'
+
+    assert_response :success
+    assert_equal 1, compliance.reload.position
+    assert_equal 2, regulatory.reload.position
+    assert_equal [compliance, regulatory], @project.risk_categories_available.to_a.last(2)
+  end
+
+  def test_xhr_put_update_with_invalid_name_should_respond_422
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_xhr_request :put, :update, :project_id => 'ecookbook', :id => regulatory.id,
+                           :risk_category => {:name => ''}, :format => 'js'
+
+    assert_response 422
+  end
+
+  def test_post_create_should_ignore_position
+    @project.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :post, :create, :project_id => 'ecookbook', :risk_category => {:name => 'Compliance', :position => 1}
+
+    assert_equal %w(Regulatory Compliance), @project.risk_categories.where(:parent_id => nil).sorted.map(&:name)
+  end
 end
 
 class ProjectsControllerRiskCategoriesTabTest < ActionController::TestCase
@@ -383,5 +413,22 @@ class ProjectsControllerRiskCategoriesTabTest < ActionController::TestCase
       assert_select 'a.icon-edit', 0
       assert_select 'a.icon-del', 0
     end
+  end
+
+  def test_settings_should_allow_reordering_project_specific_categories_only
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+    compliance = @project.risk_categories.create!(:name => 'Compliance')
+
+    compatible_request :get, :settings, :id => 'ecookbook', :tab => 'risks'
+
+    assert_response :success
+    assert_select 'table.risk-categories tbody.system-categories tr', 2 do
+      assert_select '.sort-handle', 0
+    end
+    assert_select 'table.risk-categories tbody.project-specific-categories tr.project-specific', 2
+    assert_select 'tbody.project-specific-categories tr:first-child td.name', :text => 'Regulatory'
+    assert_select "tr#risk-category-#{compliance.id} .sort-handle[data-reorder-url=?][data-reorder-param=?]",
+                  "/projects/ecookbook/risk_categories/#{compliance.id}", 'risk_category'
+    assert_match 'positionedItems', response.body
   end
 end

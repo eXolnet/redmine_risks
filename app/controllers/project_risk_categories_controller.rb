@@ -11,7 +11,7 @@ class ProjectRiskCategoriesController < ApplicationController
 
   # Adds a category specific to the project
   def create
-    @category = @project.risk_categories.build(category_params.merge(:active => true))
+    @category = @project.risk_categories.build(category_params.except(:position).merge(:active => true))
     if @category.save
       flash[:notice] = l(:notice_successful_create)
       redirect_to_settings
@@ -23,13 +23,21 @@ class ProjectRiskCategoriesController < ApplicationController
   def edit
   end
 
-  # Renames a category specific to the project
+  # Renames or moves a category specific to the project
   def update
     if @category.update(category_params)
-      flash[:notice] = l(:notice_successful_update)
-      redirect_to_settings
+      respond_to do |format|
+        format.html do
+          flash[:notice] = l(:notice_successful_update)
+          redirect_to_settings
+        end
+        format.js {head :ok}
+      end
     else
-      render :edit
+      respond_to do |format|
+        format.html {render :edit}
+        format.js {head :unprocessable_content}
+      end
     end
   end
 
@@ -94,7 +102,7 @@ class ProjectRiskCategoriesController < ApplicationController
   end
 
   def category_params
-    params.fetch(:risk_category, {}).permit(:name)
+    params.fetch(:risk_category, {}).permit(:name, :position)
   end
 
   def bulk_update_params

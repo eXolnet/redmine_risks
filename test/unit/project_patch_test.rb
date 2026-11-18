@@ -147,4 +147,23 @@ class ProjectPatchTest < ActiveSupport::TestCase
     assert_equal 'Regulatory', regulatory.reload.name
     assert_equal [regulatory], @project.risk_categories.reload.to_a
   end
+
+  def test_project_specific_categories_should_be_ordered_by_position_after_system_categories
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+    compliance = @project.risk_categories.create!(:name => 'Compliance')
+    assert_equal [1, 2], [regulatory.position, compliance.position]
+
+    compliance.update!(:position => 1)
+
+    assert_equal [@technical, @financial, compliance, regulatory], @project.risk_categories_available.to_a
+    assert_equal 2, regulatory.reload.position
+    assert_equal [1, 2, 3], [@technical, @financial, @legacy].map {|c| c.reload.position}
+  end
+
+  def test_risk_categories_should_be_sorted_with_system_categories_first
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory') # position 1
+    override = @project.risk_categories.create!(:name => 'Financial', :parent => @financial, :active => false)
+
+    assert_equal [@technical, @financial, override, regulatory], [regulatory, override, @financial, @technical].sort
+  end
 end

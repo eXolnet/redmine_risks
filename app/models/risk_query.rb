@@ -34,7 +34,7 @@ class RiskQuery < Query
     QueryColumn.new(:id, :sortable => "#{Risk.table_name}.id", :default_order => 'desc', :caption => :label_risk_id),
     QueryColumn.new(:project, :groupable => "#{Risk.table_name}.project_id", :sortable => "#{Project.table_name}.id"),
     QueryColumn.new(:subject, :sortable => "#{Risk.table_name}.subject"),
-    QueryColumn.new(:category, :sortable => "#{RiskCategory.table_name}.position", :default_order => 'desc', :groupable => true),
+    QueryColumn.new(:category, :sortable => [RiskCategory.project_specific_order_sql, "#{RiskCategory.table_name}.position"], :default_order => 'desc', :groupable => true),
     QueryColumn.new(:probability, :sortable => "#{Risk.table_name}.probability", :default_order => 'desc', :groupable => true),
     QueryColumn.new(:impact, :sortable => "#{Risk.table_name}.impact", :default_order => 'desc', :groupable => true),
     RiskMagnitudeQueryColumn.new(:magnitude, :sortable => "(#{Risk.table_name}.impact * #{Risk.table_name}.probability)", :default_order => 'desc'),
