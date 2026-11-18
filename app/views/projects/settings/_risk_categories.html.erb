@@ -1,5 +1,5 @@
 <div class="contextual">
-<%= link_to(sprite_icon('del', l(:button_reset)), project_risk_categories_path(@project),
+<%= link_to(sprite_icon('del', l(:button_reset)), project_reset_risk_categories_path(@project),
             :method => :delete,
             :data => {:confirm => l(:text_are_you_sure)},
             :class => 'icon icon-del') %>
@@ -22,16 +22,21 @@
     <th><%= value.name %></th>
     <% end %>
     <th><%= toggle_checkboxes_link('input.enumerations_active') %> <%= l(:field_active) %></th>
+    <th></th>
   </tr></thead>
 
   <% categories.each do |enumeration| %>
   <%= fields_for "enumerations[#{enumeration.id}]", enumeration do |ff| %>
-  <tr>
+  <tr id="risk-category-<%= enumeration.id %>" class="<%= enumeration.project_specific? ? 'project-specific' : 'system' %>">
     <td class="name">
-      <%= ff.hidden_field :parent_id, :value => enumeration.id unless enumeration.project %>
-      <%= enumeration %>
+      <% if enumeration.project_specific? %>
+        <%= ff.text_field :name, :size => 30, :maxlength => 30, :required => true %>
+      <% else %>
+        <%= ff.hidden_field :parent_id, :value => enumeration.id unless enumeration.project %>
+        <%= enumeration %>
+      <% end %>
     </td>
-    <td class="tick"><%= checked_image !enumeration.project %></td>
+    <td class="tick"><%= checked_image !enumeration.project_specific? %></td>
     <% enumeration.custom_field_values.each do |value| %>
     <td>
       <%= custom_field_tag "enumerations[#{enumeration.id}]", value %>
@@ -40,6 +45,14 @@
     <td>
       <%= ff.check_box :active, :class => 'enumerations_active' %>
     </td>
+    <td class="buttons">
+      <% if enumeration.project_specific? %>
+        <%= link_to(sprite_icon('del', l(:button_delete)), project_risk_category_path(@project, enumeration),
+                    :method => :delete,
+                    :data => (enumeration.in_use? ? {} : {:confirm => l(:text_are_you_sure)}),
+                    :class => 'icon icon-del') %>
+      <% end %>
+    </td>
   </tr>
   <% end %>
   <% end %>
@@ -47,4 +60,11 @@
 
 <%= submit_tag l(:button_save) %>
 <% end %>
+<% end %>
+
+<h3><%= l(:label_risk_category_new) %></h3>
+<%= form_tag(project_risk_categories_path(@project), :method => :post, :id => 'new-risk-category-form') do %>
+  <%= label_tag 'risk_category_name', l(:field_name) %>
+  <%= text_field_tag 'risk_category[name]', '', :id => 'risk_category_name', :size => 30, :maxlength => 30, :required => true %>
+  <%= submit_tag l(:button_add) %>
 <% end %>

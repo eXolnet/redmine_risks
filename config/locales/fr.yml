@@ -52,6 +52,7 @@ fr:
   enumeration_risk_categories: "Catégories des risques"
   field_risk_category_system: "Catégorie système"
   permission_manage_project_risk_categories: "Gérer les catégories de risques du projet"
+  label_risk_category_new: "Nouvelle catégorie du projet"
   notice_risk_successful_create: "Risque créé avec succès."
   notice_risk_successful_update: "Risque mis à jour avec succès."
   notice_risk_successful_delete: "Risque supprimé avec succès."

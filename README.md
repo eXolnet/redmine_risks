@@ -48,7 +48,7 @@ This plugin version is compatible only with Redmine 6.0 and later.
 
 Enable the "Risks" module on a project and grant the risk permissions (view, add, edit, delete and manage relations) to the appropriate roles.
 
-Risk categories are managed by administrators in *Administration › Enumerations*. Each project can then enable or disable them in the **Risks** tab of its settings (permission *Manage project risk categories*): only the categories active in the project are offered in the risk form, filters and context menu, while existing risks keep their category even once it is disabled.
+System risk categories are managed by administrators in *Administration › Enumerations*. In the **Risks** tab of its settings (permission *Manage project risk categories*), each project can enable or disable the system categories and add, rename, disable or delete its own categories. Only the categories active in the project are offered in the risk form, filters, context menu and bulk edit, while existing risks keep their category even once it is disabled. Deleting a project category in use lets you reassign its risks to another category.
 
 Custom fields can be added to risks in *Administration » Custom fields » Risks*. They are displayed in the risk form and page, can be used as columns, filters (when "Used as a filter" is checked) and grouping criteria in the risk list, are recorded in the history and can be restricted to some roles.
 

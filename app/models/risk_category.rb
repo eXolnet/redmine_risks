@@ -3,8 +3,15 @@ class RiskCategory < Enumeration
 
   OptionName = :enumeration_risk_categories
 
+  validate :validate_project_specific_name
+
   def option_name
     OptionName
+  end
+
+  # Is this category specific to a project (not an override of a system category)?
+  def project_specific?
+    project_id.present? && parent_id.nil?
   end
 
   # Risks using this category or one of its project overrides
@@ -38,6 +45,18 @@ class RiskCategory < Enumeration
       shared.active
     else
       project.risk_categories_available
+    end
+  end
+
+  private
+
+  # A project specific category can't take the name of a system category,
+  # which would be ambiguous with the system category or its override
+  def validate_project_specific_name
+    return unless project_specific? && name.present?
+
+    if RiskCategory.shared.where.not(:id => id).named(name).exists?
+      errors.add :name, :taken
     end
   end
 end

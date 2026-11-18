@@ -86,4 +86,65 @@ class ProjectPatchTest < ActiveSupport::TestCase
 
     assert_nil RiskCategory.find_by_id(override.id)
   end
+
+  # Categories specific to a project
+
+  def test_project_specific_category_should_be_available_after_system_categories
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    assert regulatory.project_specific?
+    assert_not regulatory.is_override?
+    assert_equal [@technical, @financial, regulatory], @project.risk_categories_available.to_a
+    assert_not_include regulatory, Project.find(2).risk_categories_available.to_a
+    assert_not_include regulatory, RiskCategory.shared.to_a
+  end
+
+  def test_project_specific_category_should_not_take_the_name_of_a_system_category
+    category = @project.risk_categories.build(:name => 'technical')
+
+    assert_not category.valid?
+    assert_include :name, category.errors.attribute_names
+  end
+
+  def test_project_specific_category_name_should_be_unique_in_project
+    @project.risk_categories.create!(:name => 'Regulatory')
+
+    assert_not @project.risk_categories.build(:name => 'Regulatory').valid?
+    assert Project.find(2).risk_categories.build(:name => 'Regulatory').valid?
+  end
+
+  def test_update_or_create_risk_categories_should_rename_and_disable_project_specific_category
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    assert @project.update_or_create_risk_categories(
+      regulatory.id.to_s => {'name' => 'Compliance', 'active' => '0'}
+    )
+    regulatory.reload
+    assert_equal 'Compliance', regulatory.name
+    assert_not regulatory.active?
+    assert_not_include regulatory, @project.risk_categories_available.to_a
+  end
+
+  def test_update_or_create_risk_categories_should_not_rename_overrides
+    @project.update_or_create_risk_categories(
+      @technical.id.to_s => {'parent_id' => @technical.id.to_s, 'active' => '0'}
+    )
+    override = @project.risk_categories.first
+
+    assert @project.update_or_create_risk_categories(override.id.to_s => {'name' => 'Other', 'active' => '1'})
+    assert_equal 'Technical', override.reload.name
+    assert override.active?
+  end
+
+  def test_update_or_create_risk_categories_with_invalid_name_should_rollback
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+
+    assert_not @project.update_or_create_risk_categories(
+      @technical.id.to_s => {'parent_id' => @technical.id.to_s, 'active' => '0'},
+      regulatory.id.to_s => {'name' => '', 'active' => '1'}
+    )
+    assert_equal regulatory, @project.invalid_risk_category
+    assert_equal 'Regulatory', regulatory.reload.name
+    assert_equal [regulatory], @project.risk_categories.reload.to_a
+  end
 end

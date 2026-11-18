@@ -360,4 +360,17 @@ class RiskQueryTest < ActiveSupport::TestCase
     assert_not_include 1, query.risks.map(&:id)
     assert_not_include 2, query.risks.map(&:id)
   end
+
+  def test_category_filter_should_include_project_specific_categories
+    regulatory = @project.risk_categories.create!(:name => 'Regulatory')
+    Project.find(2).risk_categories.create!(:name => 'Marketing')
+    Risk.where(:id => 1).update_all(:category_id => regulatory.id)
+
+    values = build_query.available_filters['category_id'][:values]
+    assert_include ['Regulatory', regulatory.id.to_s], values
+    assert_not_include 'Marketing', values.map(&:first)
+
+    query = build_query('status' => ['*', ['']], 'category_id' => ['=', [regulatory.id.to_s]])
+    assert_equal [1], query.risks.map(&:id)
+  end
 end

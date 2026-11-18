@@ -692,4 +692,19 @@ class RisksControllerTest < ActionController::TestCase
       assert_select 'option', :text => 'Legacy', :count => 0
     end
   end
+
+  def test_get_new_should_list_project_specific_categories
+    technical = RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+    Project.find(2).risk_categories.create!(:name => 'Marketing')
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id' do
+      assert_select 'option[value=?]', technical.id.to_s
+      assert_select 'option[value=?]', regulatory.id.to_s, :text => 'Regulatory'
+      assert_select 'option', :text => 'Marketing', :count => 0
+    end
+  end
 end

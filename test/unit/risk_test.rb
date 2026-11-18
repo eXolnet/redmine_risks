@@ -773,4 +773,31 @@ class RiskTest < ActiveSupport::TestCase
     assert risk.save, risk.errors.full_messages.join(', ')
     assert_nil risk.reload.category_id
   end
+
+  def test_risk_should_accept_project_specific_category
+    regulatory = Project.find(1).risk_categories.create!(:name => 'Regulatory')
+    risk = Risk.find(1)
+    risk.category_id = regulatory.id
+
+    assert risk.save
+    assert_equal regulatory, risk.reload.category
+  end
+
+  def test_risk_should_not_accept_category_of_another_project
+    regulatory = Project.find(2).risk_categories.create!(:name => 'Regulatory')
+    risk = Risk.find(1)
+    risk.category_id = regulatory.id
+
+    assert_not risk.valid?
+    assert_include :category_id, risk.errors.attribute_names
+  end
+
+  def test_copy_to_another_project_should_drop_project_specific_category
+    User.current = User.find(1)
+    regulatory = Project.find(1).risk_categories.create!(:name => 'Regulatory')
+    Risk.where(:id => 1).update_all(:category_id => regulatory.id)
+
+    assert_equal regulatory, Risk.new(:project => Project.find(1)).copy_from(Risk.find(1)).category
+    assert_nil Risk.new(:project => Project.find(2)).copy_from(Risk.find(1)).category
+  end
 end
