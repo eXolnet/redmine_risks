@@ -48,7 +48,7 @@ class RiskQuery < Query
     add_available_filter "updated_by", :type => :list, :values => lambda { author_values }
     add_available_filter "last_updated_by", :type => :list, :values => lambda { author_values }
     add_available_filter "subproject_id", :type => :list_subprojects, :values => lambda { subproject_values } if project && !project.leaf?
-    add_available_filter "related_issue", :type => :relation, :label => options[:name], :values => lambda {all_projects_values}
+    add_available_filter "related_issue", :type => :relation, :label => :field_related_issue, :values => lambda {all_projects_values}
     add_available_filter "risk_id", :type => :integer, :label => :label_risk
 
     add_associations_custom_fields_filters :project, :author, :assigned_to

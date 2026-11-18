@@ -1,0 +1,24 @@
+<%
+  # Renders the related risks stats (total (open - closed)), like the related issues stats.
+  # Links point to the risks list of the project, filtered on the issue, when all
+  # the risks belong to the same project (the risks list is always project scoped).
+  closed_count = risks.count(&:closed?)
+  open_count = risks.size - closed_count
+  project = risks.map(&:project).uniq.one? ? risks.first.project : nil
+
+  risks_url = lambda do |statuses|
+    filters = {:set_filter => 1, :f => ['related_issue'], :op => {'related_issue' => '='}, :v => {'related_issue' => [@issue.id.to_s]}}
+    if statuses
+      filters[:f] << 'status'
+      filters[:op]['status'] = '='
+      filters[:v]['status'] = statuses
+    end
+    project_risks_path(project, filters)
+  end
+%>
+<span class="issues-stat">
+  <span class="badge badge-issues-count"><%= link_to_if project, risks.size, (risks_url.call(nil) if project) %></span>
+  (<span class="open"><%= link_to_if project && open_count > 0, l(:label_x_open_risks_abbr, :count => open_count), (risks_url.call(['open']) if project) %></span>
+  &#8212;
+  <span class="closed"><%= link_to_if project && closed_count > 0, l(:label_x_closed_risks_abbr, :count => closed_count), (risks_url.call(['closed', 'rejected']) if project) %></span>)
+</span>

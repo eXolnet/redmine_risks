@@ -22,7 +22,7 @@ Redmine::Plugin.register :redmine_risks do
     permission :delete_risks,          { :risks => [:destroy] }, :require => :member
 
     # Related issues
-    permission :manage_risk_relations, {}
+    permission :manage_risk_relations, { :issue_risks => [:create, :destroy] }
   end
 
   # Pulls are added to the activity view

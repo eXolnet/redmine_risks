@@ -9,6 +9,7 @@ de:
   field_impact: Auswirkung
   field_magnitude: Risikoklasse
   field_strategy: Strategie
+  field_related_issue: "Zugehörige Aufgabe"
   field_treatments: Maßnahmen
   field_lessons: Erkentnisse
   label_risk_status_open: Offen
@@ -41,4 +42,14 @@ de:
   notice_risk_successful_update: "Risiko erfolgreich aktualisiert."
   notice_risk_successful_delete: "Riskio erfolgreich gelöscht."
   error_risk_issue_not_linkable: "Die Aufgabe kann nicht mit diesem Risiko verknüpft werden."
+  error_risk_not_linkable: "Das Risiko kann nicht mit dieser Aufgabe verknüpft werden."
+  label_related_risks: "Zugehörige Risiken"
+  label_x_open_risks_abbr:
+    zero: "0 offen"
+    one: "1 offen"
+    other: "%{count} offen"
+  label_x_closed_risks_abbr:
+    zero: "0 geschlossen"
+    one: "1 geschlossen"
+    other: "%{count} geschlossen"
   text_risks_destroy_confirmation: 'Ausgewählte Risiko(s) wirklich löschen?'

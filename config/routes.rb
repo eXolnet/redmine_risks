@@ -21,3 +21,6 @@ resources :risks, :except => [:index, :new, :create] do
 end
 
 match '/risks', :controller => 'risks', :action => 'destroy', :via => :delete
+
+post   '/issues/:issue_id/risks', :to => 'issue_risks#create', :issue_id => /\d+/, :as => 'issue_risks'
+delete '/issues/:issue_id/risks/:risk_id', :to => 'issue_risks#destroy', :issue_id => /\d+/, :risk_id => /\d+/, :as => 'issue_risk'
