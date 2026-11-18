@@ -13,7 +13,7 @@
       <% categories = RiskCategory.available_categories(@risk.project).to_a %>
       <% categories << @risk.category if @risk.persisted? && @risk.category && !categories.include?(@risk.category) %>
       <% if @risk.safe_attribute?('category_id') && categories.any? %>
-        <p><%= f.select :category_id, categories.collect {|c| [c.name, c.id]}, :include_blank => true %></p>
+        <p><%= f.select :category_id, risk_category_options_for_select(categories, @risk.category_id), :include_blank => true %></p>
       <% end %>
 
       <% if @risk.safe_attribute?('probability') %>

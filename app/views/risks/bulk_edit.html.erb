@@ -57,7 +57,7 @@
   <%= select_tag('risk[category_id]',
                  content_tag('option', l(:label_no_change_option), :value => '') +
                    content_tag('option', l(:label_none), :value => 'none', :selected => (@risk_params[:category_id] == 'none')) +
-                   options_from_collection_for_select(@categories, :id, :name, @risk_params[:category_id])) %>
+                   risk_category_options_for_select(@categories, @risk_params[:category_id])) %>
 </p>
 <% end %>
 

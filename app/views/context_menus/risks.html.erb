@@ -62,7 +62,11 @@
     <li class="folder">
       <a href="#" class="submenu"><%= l(:field_category) %></a>
       <ul>
+        <% system_categories, project_categories = partition_risk_categories(@categories) -%>
         <% @categories.each do |c| -%>
+          <% if c == project_categories.first && system_categories.any? -%>
+            <li><%= context_menu_link RisksHelper::RISK_CATEGORY_SEPARATOR, '#', :class => 'separator', :disabled => true %></li>
+          <% end -%>
           <li>
             <%= context_menu_link c.name, bulk_update_risks_path(:ids => @risk_ids, :risk => {'category_id' => c.id}, :back_url => @back),
                                   :method => :post,

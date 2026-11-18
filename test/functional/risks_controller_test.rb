@@ -707,4 +707,41 @@ class RisksControllerTest < ActionController::TestCase
       assert_select 'option', :text => 'Marketing', :count => 0
     end
   end
+
+  def test_get_new_should_separate_system_and_project_categories
+    technical = RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id' do
+      assert_select 'option', 4
+      assert_select 'option:nth-child(2)[value=?]', technical.id.to_s
+      assert_select 'option:nth-child(3)[disabled=disabled].separator', :text => '──────────'
+      assert_select 'option:nth-child(4)[value=?]', regulatory.id.to_s
+    end
+  end
+
+  def test_get_new_without_project_categories_should_not_display_separator
+    RiskCategory.create!(:name => 'Technical')
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'select#risk_category_id option.separator', 0
+  end
+
+  def test_get_bulk_edit_of_one_project_should_separate_project_categories
+    RiskCategory.create!(:name => 'Technical')
+    regulatory = @project1.risk_categories.create!(:name => 'Regulatory')
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'select[name=?]', 'risk[category_id]' do
+      assert_select 'option.separator[disabled=disabled]', 1
+      assert_select 'option.separator + option[value=?]', regulatory.id.to_s
+    end
+  end
 end

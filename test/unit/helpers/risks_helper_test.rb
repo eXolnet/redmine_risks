@@ -99,4 +99,31 @@ class RisksHelperTest < Redmine::HelperTest
     assert_equal '<a title="Sit sodales posuere" href="/risks/1">Sit sodales posuere</a>', link_to_risk(risk)
     assert_equal '<a title="Custom" href="/risks/1">Custom</a>', link_to_risk(risk, :text => 'Custom')
   end
+
+  def test_risk_category_options_for_select_should_separate_project_categories
+    technical = RiskCategory.create!(:name => 'Technical')
+    regulatory = Project.find(1).risk_categories.create!(:name => 'Regulatory')
+
+    html = risk_category_options_for_select([technical, regulatory], regulatory.id)
+
+    assert_equal %(<option value="#{technical.id}">Technical</option>) +
+                 %(<option disabled="disabled" class="separator">──────────</option>) +
+                 %(<option selected="selected" value="#{regulatory.id}">Regulatory</option>), html
+  end
+
+  def test_risk_category_options_for_select_without_project_categories_should_not_add_separator
+    technical = RiskCategory.create!(:name => 'Technical')
+    override = Project.find(1).risk_categories.create!(:name => 'Financial', :parent => RiskCategory.create!(:name => 'Financial'))
+
+    html = risk_category_options_for_select([technical, override])
+
+    assert_not_include 'separator', html
+    assert_equal 2, html.scan('<option').size
+  end
+
+  def test_risk_category_options_for_select_with_only_project_categories_should_not_add_separator
+    regulatory = Project.find(1).risk_categories.create!(:name => 'Regulatory')
+
+    assert_not_include 'separator', risk_category_options_for_select([regulatory])
+  end
 end
