@@ -34,6 +34,17 @@ pt-BR:
   label_risk_strategy_mitigate: Mitigar
   label_risk_strategy_transfer: Transferir
   label_risk_strategy_eliminate: Eliminar
+  label_risk_dashboard: "Painel de riscos"
+  label_risk_list: "Lista de riscos"
+  label_risk_matrix: "Matriz probabilidade × impacto"
+  label_risk_matrix_caption: "Número de riscos abertos por probabilidade e impacto"
+  label_risk_matrix_cell_title: "Probabilidade: %{probability}, impacto: %{impact}, magnitude: %{magnitude} (%{count} risco(s) aberto(s))"
+  label_risk_top_risks: "Os %{count} principais riscos abertos por magnitude"
+  label_risk_by_category: "Riscos abertos por categoria"
+  label_risk_by_strategy: "Riscos abertos por estratégia"
+  label_risk_unrated_count:
+    one: "1 risco aberto não está avaliado na matriz"
+    other: "%{count} riscos abertos não estão avaliados na matriz"
   default_risk_category_internal: Interno
   default_risk_category_external: Externo
   default_risk_category_technical: Técnico

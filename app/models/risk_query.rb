@@ -66,6 +66,8 @@ class RiskQuery < Query
     add_available_filter "assigned_to_role", :type => :list_optional, :values => lambda { Role.givable.collect {|r| [r.name, r.id.to_s] } }
     add_available_filter "status", :type => :list, :values => Risk::RISK_STATUS.map{|s| [format_risk_status(s), s] }
     add_available_filter "strategy", :type => :list, :values => Risk::RISK_STRATEGY.map{|s| [format_risk_strategy(s), s] }
+    add_available_filter "probability", :type => :list, :values => format_risk_levels(Risk::RISK_PROBABILITY) {|v| format_risk_probability(v) }.map {|label, v| [label, v.to_s] }
+    add_available_filter "impact", :type => :list, :values => format_risk_levels(Risk::RISK_IMPACT) {|v| format_risk_impact(v) }.map {|label, v| [label, v.to_s] }
     add_available_filter "subject", :type => :text
     add_available_filter "description", :type => :text
     add_available_filter "created_on", :type => :date_past

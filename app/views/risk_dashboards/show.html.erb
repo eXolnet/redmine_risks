@@ -1,0 +1,153 @@
+<div class="contextual">
+  <%= link_to sprite_icon('list', l(:label_risk_list)), project_risks_path(@project), :class => 'icon icon-list' %>
+</div>
+
+<h2><%= l(:label_risk_dashboard) %></h2>
+
+<div class="risk-dashboard">
+  <ul class="risk-status-counts">
+    <% Risk::RISK_STATUS.each do |status| %>
+      <li class="risk-status-count status-<%= status %>">
+        <%= link_to risks_filtered_path(@project, :status => status) do %>
+          <span class="count"><%= @status_counts[status] %></span>
+          <span class="label"><%= format_risk_status(status) %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="splitcontent">
+    <div class="splitcontentleft">
+      <div class="box risk-matrix-box">
+        <h3><%= l(:label_risk_matrix) %></h3>
+
+        <% probabilities = risk_matrix_levels(Risk::RISK_PROBABILITY) %>
+        <% impacts = risk_matrix_levels(Risk::RISK_IMPACT) %>
+        <div class="risk-matrix-wrapper">
+          <table class="risk-matrix">
+            <caption><%= l(:label_risk_matrix_caption) %></caption>
+            <thead>
+              <tr>
+                <th scope="col" class="axis"><%= l(:field_probability) %> \ <%= l(:field_impact) %></th>
+                <% impacts.each do |impact| %>
+                  <th scope="col"><%= format_risk_impact(impact) %></th>
+                <% end %>
+              </tr>
+            </thead>
+            <tbody>
+              <% probabilities.reverse_each do |probability| %>
+                <tr>
+                  <th scope="row"><%= format_risk_probability(probability) %></th>
+                  <% impacts.each do |impact| %>
+                    <% count = @matrix[[probability, impact]].to_i %>
+                    <% level = Risk.magnitude_level_for(probability, impact) %>
+                    <td class="<%= risk_magnitude_css(level) %><%= ' empty' if count.zero? %>" data-probability="<%= probability %>" data-impact="<%= impact %>">
+                      <%= link_to_open_risks @project,
+                                             (count.zero? ? '' : count.to_s),
+                                             {:probability => probability, :impact => impact},
+                                             :title => l(:label_risk_matrix_cell_title,
+                                                         :probability => format_risk_probability(probability),
+                                                         :impact => format_risk_impact(impact),
+                                                         :magnitude => l("label_risk_level_#{Risk::RISK_MAGNITUDE[level]}"),
+                                                         :count => count) %>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <ul class="risk-magnitude-legend">
+          <% Risk::RISK_MAGNITUDE.each_with_index do |magnitude, level| %>
+            <li><span class="swatch <%= risk_magnitude_css(level) %>"></span><%= l("label_risk_level_#{magnitude}") %></li>
+          <% end %>
+        </ul>
+
+        <% if @unrated_count > 0 %>
+          <p class="risk-unrated"><%= l(:label_risk_unrated_count, :count => @unrated_count) %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="splitcontentright">
+      <div class="box risk-top-risks">
+        <h3><%= l(:label_risk_top_risks, :count => RiskDashboardsController::TOP_RISKS_LIMIT) %></h3>
+        <% if @top_risks.empty? %>
+          <p class="nodata"><%= l(:label_no_data) %></p>
+        <% else %>
+          <table class="list risks">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th><%= l(:field_subject) %></th>
+                <th><%= l(:field_category) %></th>
+                <th><%= l(:field_magnitude) %></th>
+                <th><%= l(:field_assigned_to) %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @top_risks.each do |risk| %>
+                <tr id="top-risk-<%= risk.id %>" class="<%= risk.css_classes %>">
+                  <td class="id"><%= link_to risk.id, risk_path(risk) %></td>
+                  <td class="subject"><%= link_to risk.subject, risk_path(risk) %></td>
+                  <td class="category"><%= risk.category %></td>
+                  <td class="magnitude"><span class="risk-magnitude-badge <%= risk_magnitude_css(risk.magnitude_level) %>"><%= risk.magnitude %></span></td>
+                  <td class="assigned_to"><%= link_to_user(risk.assigned_to) if risk.assigned_to %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </div>
+
+      <div class="box risk-breakdown risk-by-category">
+        <h3><%= l(:label_risk_by_category) %></h3>
+        <% if @category_counts.empty? %>
+          <p class="nodata"><%= l(:label_no_data) %></p>
+        <% else %>
+          <table class="list risk-breakdown-table">
+            <tbody>
+              <% @category_counts.each do |category, count| %>
+                <tr class="<%= category ? "category-#{category.id}" : 'category-none' %>">
+                  <td class="name"><%= category ? category.name : l(:label_none) %></td>
+                  <td class="bar"><span class="risk-bar" style="width: <%= risk_dashboard_ratio(count, @open_count) %>%"></span></td>
+                  <td class="count">
+                    <%= category ? link_to_open_risks(@project, count, :category_id => category.id) : count %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </div>
+
+      <div class="box risk-breakdown risk-by-strategy">
+        <h3><%= l(:label_risk_by_strategy) %></h3>
+        <% if @strategy_counts.empty? %>
+          <p class="nodata"><%= l(:label_no_data) %></p>
+        <% else %>
+          <table class="list risk-breakdown-table">
+            <tbody>
+              <% @strategy_counts.each do |strategy, count| %>
+                <tr class="strategy-<%= strategy || 'none' %>">
+                  <td class="name"><%= strategy ? format_risk_strategy(strategy) : l(:label_none) %></td>
+                  <td class="bar"><span class="risk-bar" style="width: <%= risk_dashboard_ratio(count, @open_count) %>%"></span></td>
+                  <td class="count">
+                    <%= strategy ? link_to_open_risks(@project, count, :strategy => strategy) : count %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'risks', :plugin => 'redmine_risks' %>
+<% end %>
+
+<% html_title(l(:label_risk_dashboard), l(:label_risks)) %>
