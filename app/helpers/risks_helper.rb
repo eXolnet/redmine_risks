@@ -130,6 +130,19 @@ module RisksHelper
     details_to_strings(details, no_html, options)
   end
 
+  # Returns the label of the group +risk+ belongs to. Risk levels and strategies
+  # are stored as raw values, so they are formatted like the matching column instead.
+  def risk_group_label(query, risk, group_name)
+    column = query.group_by_column
+
+    if [:probability, :impact, :magnitude, :strategy].include?(column.name)
+      value = column.value(risk)
+      return column_value(column, risk, value) unless value.nil?
+    end
+
+    group_name
+  end
+
   def column_value_with_risks(column, item, value)
     case column.name
     when :id, :subject
