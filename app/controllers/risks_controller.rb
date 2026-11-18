@@ -214,13 +214,35 @@ class RisksController < ApplicationController
 
   private
 
+  # The new risk will be copied from an existing one if copy_from parameter is given
   def build_new_risk_from_params
     @risk = Risk.new
     @risk.project = @project
+
+    if params[:copy_from].present?
+      begin
+        @copy_from = Risk.find(params[:copy_from])
+      rescue ActiveRecord::RecordNotFound
+        render_404
+        return
+      end
+
+      raise ::Unauthorized unless @copy_from.visible?
+
+      @copy_issues = params[:copy_issues].present? || request.get?
+      @risk.copy_from(@copy_from, :issues => @copy_issues)
+    end
+
     @risk.author ||= User.current
 
     attrs = (params[:risk] || {}).deep_dup
-    attrs.delete_if {|k,v| v.blank?}
+
+    if @copy_from
+      # Fields cleared in the copy form must not fall back to the source values
+      attrs.transform_values! {|v| v.blank? ? nil : v}
+    else
+      attrs.delete_if {|k,v| v.blank?}
+    end
 
     @risk.safe_attributes = attrs
   end
