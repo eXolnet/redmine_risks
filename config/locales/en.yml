@@ -4,6 +4,7 @@ en:
   label_risk: Risk
   label_risk_plural: Risks
   label_new_risk: New risk
+  label_copy_risk_issues: Copy related issues
   label_risk_id: '#'
   field_probability: Probability
   field_impact: Impact

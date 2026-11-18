@@ -221,6 +221,205 @@ class RisksControllerTest < ActionController::TestCase
     assert_equal ['accept'], Risk.where(:id => [1, risk.id]).distinct.pluck(:strategy)
   end
 
+  def test_get_new_should_display_risk_custom_fields
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string', :is_required => true)
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'input[name=?]', "risk[custom_field_values][#{field.id}]"
+    assert_select 'label[for=?] span.required', "risk_custom_field_values_#{field.id}"
+  end
+
+  def test_post_create_with_risk_custom_field
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook',
+        :risk => {:subject => 'Subject', :custom_field_values => {field.id.to_s => 'Ops'}}
+    end
+
+    assert_equal 'Ops', Risk.order(:id).last.custom_field_value(field)
+  end
+
+  def test_post_create_without_required_risk_custom_field_should_fail
+    RiskCustomField.create!(:name => 'Owner team', :field_format => 'string', :is_required => true)
+
+    assert_no_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :risk => {:subject => 'Subject'}
+    end
+
+    assert_response :success
+    assert_select '#errorExplanation', :text => /Owner team/
+  end
+
+  def test_get_edit_should_display_risk_custom_field_value
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    compatible_request :get, :edit, :id => 1
+
+    assert_response :success
+    assert_select 'input[name=?][value=?]', "risk[custom_field_values][#{field.id}]", 'Ops'
+  end
+
+  def test_put_update_with_risk_custom_field_should_journalize_the_change
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    assert_difference 'Journal.count' do
+      compatible_request :put, :update, :id => 1, :risk => {:custom_field_values => {field.id.to_s => 'Ops'}}
+    end
+
+    assert_response 302
+    assert_equal 'Ops', Risk.find(1).custom_field_value(field)
+
+    compatible_request :get, :show, :id => 1
+    assert_select '#history ul.details li', :text => /Owner team.*Ops/
+  end
+
+  def test_get_show_should_display_visible_risk_custom_fields
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    long_field = RiskCustomField.create!(:name => 'Context', :field_format => 'text', :full_width_layout => '1')
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops', long_field.id.to_s => 'Long context'}
+    risk.save!
+
+    compatible_request :get, :show, :id => 1
+
+    assert_response :success
+    assert_select "div.attributes div.cf_#{field.id} div.value", :text => 'Ops'
+    assert_select "div.cf_#{long_field.id} div.value", :text => /Long context/
+  end
+
+  def test_get_show_should_hide_risk_custom_fields_not_visible_by_the_user
+    Role.find(2).add_permission!(:view_risks, :edit_risks)
+    field = RiskCustomField.create!(:name => 'Managers only', :field_format => 'string', :visible => false, :role_ids => [1])
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Secret'}
+    risk.save!
+    @request.session[:user_id] = 3 # dlopper is Developer
+
+    compatible_request :get, :show, :id => 1
+
+    assert_response :success
+    assert_select "div.cf_#{field.id}", 0
+    assert_select 'input[name=?]', "risk[custom_field_values][#{field.id}]", 0
+  end
+
+  def test_get_index_with_risk_custom_field_column_and_group
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'list', :possible_values => ['Dev', 'Ops'])
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    compatible_request :get, :index, :project_id => 'ecookbook', :set_filter => 1,
+      :c => ['subject', "cf_#{field.id}"], :group_by => "cf_#{field.id}"
+
+    assert_response :success
+    assert_select "table.risks th", :text => 'Owner team'
+    assert_select "table.risks tr#risk-1 td.cf_#{field.id}", :text => 'Ops'
+    assert_select 'tr.group span.name', :text => 'Ops'
+  end
+
+  def test_get_copy_should_prefill_form
+    category = RiskCategory.create!(:name => 'Technical')
+    Risk.find(1).update_column(:category_id, category.id)
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 1
+
+    assert_response :success
+    assert_select 'form#risk-form[action=?]', '/projects/ecookbook/risks' do
+      assert_select 'input[type=hidden][name=?][value=?]', 'copy_from', '1'
+      assert_select 'select[name=?]', 'risk[project_id]' do
+        assert_select 'option[selected=selected][value=?]', '1'
+      end
+      assert_select 'input[name=?][value=?]', 'risk[subject]', 'Sit sodales posuere'
+      assert_select 'textarea[name=?]', 'risk[description]', :text => /Amet tellus quis/
+      assert_select 'textarea[name=?]', 'risk[treatments]', :text => /Fringilla nam/
+      assert_select 'textarea[name=?]', 'risk[lessons]'
+      assert_select 'select[name=?] option[selected=selected][value=?]', 'risk[category_id]', category.id.to_s
+      assert_select 'select[name=?] option[selected=selected][value=?]', 'risk[probability]', '25'
+      assert_select 'select[name=?] option[selected=selected][value=?]', 'risk[impact]', '50'
+      assert_select 'select[name=?] option[selected=selected][value=?]', 'risk[strategy]', 'mitigate'
+      assert_select 'select[name=?] option[selected=selected][value=?]', 'risk[assigned_to_id]', '1'
+      assert_select 'input[type=checkbox][name=?][checked=checked]', 'copy_issues'
+      assert_select 'select[name=?]', 'risk[status]', 0
+    end
+  end
+
+  def test_get_copy_of_risk_without_issues_should_not_display_copy_issues_option
+    Risk.find(1).issues.clear
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 1
+
+    assert_response :success
+    assert_select 'input[name=?]', 'copy_issues', 0
+  end
+
+  def test_get_copy_with_unknown_risk_should_respond_404
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 999
+
+    assert_response 404
+  end
+
+  def test_post_create_copy_should_create_open_risk_with_issues
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 2, :copy_issues => '1',
+        :risk => {:project_id => '1', :subject => 'Copy', :description => 'Description', :strategy => 'transfer'}
+    end
+
+    risk = Risk.order('id DESC').first
+    assert_redirected_to "/risks/#{risk.id}"
+    assert_equal 'Copy', risk.subject
+    assert_equal 'transfer', risk.strategy
+    assert_equal 'open', risk.status
+    assert_nil risk.closed_on
+    assert_equal User.find(1), risk.author
+    assert_equal Risk.find(2).issue_ids.sort, risk.issue_ids.sort
+  end
+
+  def test_post_create_copy_should_copy_related_issues
+    compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1, :copy_issues => '1',
+      :risk => {:project_id => '1', :subject => 'Copy'}
+
+    assert_equal [1], Risk.order('id DESC').first.issue_ids
+  end
+
+  def test_post_create_copy_without_copy_issues_should_not_copy_related_issues
+    compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1,
+      :risk => {:project_id => '1', :subject => 'Copy'}
+
+    risk = Risk.order('id DESC').first
+    assert_equal 'Copy', risk.subject
+    assert_equal [], risk.issue_ids
+    assert_equal [1], Risk.find(1).issue_ids
+  end
+
+  def test_post_create_copy_should_clear_attributes_emptied_in_form
+    compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1,
+      :risk => {:project_id => '1', :subject => 'Copy', :assigned_to_id => '', :strategy => '', :lessons => ''}
+
+    risk = Risk.order('id DESC').first
+    assert_nil risk.assigned_to_id
+    assert_nil risk.strategy
+    assert_equal 50, risk.impact
+  end
+
+  def test_post_create_copy_to_another_project
+    EnabledModule.create!(:project => Project.find(2), :name => 'risks')
+
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1, :copy_issues => '1',
+        :risk => {:project_id => '2', :subject => 'Copy'}
+    end
+
+    risk = Risk.order('id DESC').first
+    assert_equal 2, risk.project_id
+    assert_equal 1, Risk.find(1).project_id
+  end
+
   def test_get_bulk_edit
     compatible_request :get, :bulk_edit, :ids => [1, 2]
 

@@ -1,4 +1,10 @@
 <%= labelled_fields_for :risk, @risk do |f| %>
+  <% if @risk.copy? && @risk.safe_attribute?('project_id') %>
+    <p>
+      <%= f.select :project_id, project_tree_options_for_select(Risk.allowed_target_projects, :selected => @risk.project), {:required => true} %>
+    </p>
+  <% end %>
+
   <% if @risk.safe_attribute? 'subject' %>
     <p><%= f.text_field :subject, :size => 80, :maxlength => 255, :required => true %></p>
   <% end %>
@@ -28,7 +34,7 @@
     <%= render :partial => 'risks/attributes' %>
   </div>
 
-  <% if @risk.safe_attribute?('treatments') && ! @risk.new_record? %>
+  <% if @risk.safe_attribute?('treatments') && (!@risk.new_record? || @risk.copy?) %>
     <p>
       <%= f.label_for_field :treatments %>
       <%= link_to_function content_tag(:span, l(:button_edit), :class => 'icon icon-edit'), '$(this).hide(); $("#risk_treatments_and_toolbar").show()' unless @risk.new_record? %>
@@ -44,7 +50,7 @@
     <%= wikitoolbar_for 'risk_treatments' %>
   <% end %>
 
-  <% if @risk.safe_attribute?('lessons') && ! @risk.new_record? %>
+  <% if @risk.safe_attribute?('lessons') && (!@risk.new_record? || @risk.copy?) %>
     <p>
       <%= f.label_for_field :lessons %>
       <%= link_to_function content_tag(:span, l(:button_edit), :class => 'icon icon-edit'), '$(this).hide(); $("#risk_lessons_and_toolbar").show()' unless @risk.new_record? %>

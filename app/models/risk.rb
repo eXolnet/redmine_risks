@@ -175,6 +175,54 @@ class Risk < ActiveRecord::Base
     assign_attributes new_attributes
   end
 
+  # Copies attributes from another risk, arg can be an id or a Risk.
+  # The project is kept as is so the copy can target another project.
+  # The copy is open, authored by the current user and has no closing date.
+  # Related issues are copied unless options[:issues] is false.
+  def copy_from(arg, options={})
+    risk = arg.is_a?(Risk) ? arg : Risk.find(arg)
+    self.attributes =
+      risk.attributes.dup.except(
+        "id", "project_id", "created_on", "updated_on", "closed_on", "status", "author_id"
+      )
+    self.custom_field_values =
+      risk.custom_field_values.each_with_object({}) do |v, h|
+        h[v.custom_field_id] = v.value
+      end
+    self.status = 'open'
+    self.closed_on = nil
+    self.author = User.current
+    unless options[:issues] == false
+      self.issues = risk.issues.visible.to_a
+    end
+    @copied_from = risk
+    self
+  end
+
+  # Returns an unsaved copy of the risk, in the same project
+  def copy(attributes=nil, copy_options={})
+    copy = self.class.new
+    copy.project = project
+    copy.copy_from(self, copy_options)
+    copy.attributes = attributes if attributes
+    copy
+  end
+
+  # Returns true if the risk is a copy
+  def copy?
+    @copied_from.present?
+  end
+
+  # Returns the risk this risk was copied from, if any
+  def copied_from
+    @copied_from
+  end
+
+  # Returns the projects the given user can create risks in
+  def self.allowed_target_projects(user=User.current)
+    Project.allowed_to(user, :add_risks)
+  end
+
   safe_attributes 'category_id',
                   'assigned_to_id',
                   'subject',
@@ -185,6 +233,7 @@ class Risk < ActiveRecord::Base
                   'treatments',
                   'lessons',
                   'custom_field_values',
+                  'custom_fields',
                   'notes',
                   :if => lambda {|risk, user| risk.new_record? || risk.attributes_editable?(user) }
 
@@ -225,6 +274,11 @@ class Risk < ActiveRecord::Base
     end
 
     super(attrs, user)
+  end
+
+  # Returns the custom fields that apply to risks (see RiskCustomField)
+  def available_custom_fields
+    RiskCustomField.sorted.to_a
   end
 
   # Returns the custom_field_values that can be edited by the given user

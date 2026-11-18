@@ -4,6 +4,7 @@ de:
   label_risk: Risiko
   label_risk_plural: Risiken
   label_new_risk: Neues Risiko
+  label_copy_risk_issues: Zugehörige Tickets kopieren
   label_risk_id: '#'
   field_probability: Wahrscheinlichkeit
   field_impact: Auswirkung

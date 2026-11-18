@@ -77,7 +77,16 @@ class RiskQuery < Query
     add_available_filter "related_issue", :type => :relation, :label => :field_related_issue, :values => lambda {all_projects_values}
     add_available_filter "risk_id", :type => :integer, :label => :label_risk
 
+    add_custom_fields_filters(RiskCustomField)
     add_associations_custom_fields_filters :project, :author, :assigned_to
+  end
+
+  def available_columns
+    return @available_columns if @available_columns
+
+    @available_columns = self.class.available_columns.dup
+    @available_columns += RiskCustomField.visible.sorted.map {|cf| QueryCustomFieldColumn.new(cf)}
+    @available_columns
   end
 
   # Returns true if the query is visible to +user+ or the current user.
