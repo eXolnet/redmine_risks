@@ -114,7 +114,8 @@ class RiskQueryTest < ActiveSupport::TestCase
   end
 
   def test_risk_id_filter
-    assert_equal [1, 2], risk_ids(build_query('risk_id' => ['=', ['1, 2']]))
+    assert_equal [2], risk_ids(build_query('risk_id' => ['=', ['2']]))
+    assert_equal [1, 2], risk_ids(build_query('risk_id' => ['=', ['1,2']]))
     assert_equal [2], risk_ids(build_query('risk_id' => ['>=', ['2']]))
     assert_not build_query('risk_id' => ['=', ['abc']]).valid?
     assert_equal '1=0', build_query.sql_for_risk_id_field('risk_id', '=', [''])

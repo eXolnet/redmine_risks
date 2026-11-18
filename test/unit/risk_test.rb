@@ -538,4 +538,19 @@ class RiskTest < ActiveSupport::TestCase
     assert_equal({:controller => 'risks', :action => 'show', :id => 1, :anchor => "change-#{journal.id}", :only_path => true},
                  journal.event_url(:only_path => true))
   end
+
+  def test_assignable_users_should_not_include_locked_author
+    risk = Risk.find(1)
+    risk.author = User.find(5) # locked user
+
+    assert_not_include User.find(5), risk.assignable_users
+  end
+
+  def test_saving_unchanged_risk_should_not_change_updated_on
+    risk = Risk.find(1)
+    updated_on = risk.updated_on
+
+    assert risk.save
+    assert_equal updated_on, risk.reload.updated_on
+  end
 end

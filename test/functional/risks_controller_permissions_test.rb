@@ -437,4 +437,23 @@ class RisksControllerPermissionsTest < ActionController::TestCase
     assert_response :success
     assert_select 'fieldset.preview em', :text => 'notes'
   end
+
+  def test_index_with_unknown_query_should_respond_404
+    compatible_request :get, :index, :project_id => 'ecookbook', :query_id => 999
+
+    assert_response 404
+  end
+
+  def test_edit_with_conflict_resolution_cancel_should_redirect_to_risk
+    compatible_request :get, :edit, :id => 1, :conflict_resolution => 'cancel'
+
+    assert_redirected_to '/risks/1'
+  end
+
+  def test_update_with_unknown_conflict_resolution_should_update_risk
+    compatible_request :put, :update, :id => 1, :conflict_resolution => 'unknown', :risk => {:subject => 'Changed'}
+
+    assert_redirected_to '/risks/1'
+    assert_equal 'Changed', Risk.find(1).subject
+  end
 end
