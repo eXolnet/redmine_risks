@@ -52,6 +52,29 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_select 'a[href*=?]', 'risk%5Bassigned_to_id%5D=2', :text => 'John Smith'
   end
 
+  def test_get_risks_single_should_list_edit_status_and_copy_link
+    compatible_request :get, :index, :ids => [1], :back_url => '/projects/ecookbook/risks'
+
+    assert_response :success
+    assert_select 'a.icon-edit:not(.disabled)[href=?]', '/risks/1/edit'
+    assert_select 'a.submenu', :text => 'Status'
+    current = Risk.find(1).status
+    assert_select 'a.disabled', :text => I18n.t("label_risk_status_#{current}")
+    (Risk::RISK_STATUS - [current]).each do |status|
+      assert_select 'a:not(.disabled)[href*=?]', "risk%5Bstatus%5D=#{status}"
+    end
+    assert_select 'a.icon-copy-link[data-clipboard-text=?]', 'http://test.host/risks/1'
+  end
+
+  def test_get_risks_many_should_list_status_and_copy_link_without_edit
+    compatible_request :get, :index, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'a.icon-edit', 0
+    assert_select 'a.submenu', :text => 'Status'
+    assert_select 'a.icon-copy-link[data-clipboard-text=?]', 'http://test.host/projects/ecookbook/risks?risk_id=1%2C2&set_filter=1'
+  end
+
   def test_get_risks_with_unknown_ids_should_respond_404
     compatible_request :get, :index, :ids => [999]
 
