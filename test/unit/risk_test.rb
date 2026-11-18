@@ -519,4 +519,23 @@ class RiskTest < ActiveSupport::TestCase
       risk.destroy
     end
   end
+
+  def test_issue_journal_events_should_not_be_changed
+    journal = Journal.find(1) # issue journal
+
+    assert_equal 'issue-edit', journal.event_type
+    assert_match /\ABug #1/, journal.event_title
+    assert_equal Issue.find(1), journal.event_group
+    assert_equal 'issues', journal.event_url[:controller]
+  end
+
+  def test_risk_journal_events
+    journal = add_journal(Risk.find(1), User.find(2), :notes => 'Note')
+
+    assert_equal 'risk', journal.event_type
+    assert_equal 'Risk #1: Sit sodales posuere', journal.event_title
+    assert_equal Risk.find(1), journal.event_group
+    assert_equal({:controller => 'risks', :action => 'show', :id => 1, :anchor => "change-#{journal.id}", :only_path => true},
+                 journal.event_url(:only_path => true))
+  end
 end
