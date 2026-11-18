@@ -4,6 +4,7 @@ pt:
   label_risk: Risco
   label_risk_plural: Riscos
   label_new_risk: Novo risco
+  label_copy_risk_issues: Copiar tarefas relacionadas
   label_risk_id: '#'
   field_probability: Probabilidade
   field_impact: Impacto

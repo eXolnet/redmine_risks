@@ -475,4 +475,105 @@ class RisksControllerPermissionsTest < ActionController::TestCase
     assert_redirected_to '/risks/1'
     assert_equal 'Changed', Risk.find(1).subject
   end
+
+  # copy
+
+  def test_show_with_add_permission_should_display_copy_link
+    compatible_request :get, :show, :id => 1
+
+    assert_response :success
+    assert_select '.contextual a.icon-copy[href=?]', '/projects/ecookbook/risks/1/copy'
+  end
+
+  def test_show_without_add_permission_should_not_display_copy_link
+    @role.remove_permission!(:add_risks)
+
+    compatible_request :get, :show, :id => 1
+
+    assert_response :success
+    assert_select 'a.icon-copy', 0
+  end
+
+  def test_copy_without_add_permission_should_be_denied
+    @role.remove_permission!(:add_risks)
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 1
+
+    assert_response 403
+  end
+
+  def test_create_copy_without_add_permission_should_be_denied
+    @role.remove_permission!(:add_risks)
+
+    assert_no_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1,
+                         :risk => {:project_id => '1', :subject => 'Copy'}
+    end
+
+    assert_response 403
+  end
+
+  def test_copy_should_set_current_user_as_author
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 2,
+                         :risk => {:project_id => '1', :subject => 'Copy'}
+    end
+
+    risk = Risk.order(:id).last
+    assert_equal User.find(2), risk.author
+    assert_equal 'open', risk.status
+    assert_nil risk.closed_on
+  end
+
+  def test_copy_should_list_only_target_projects_with_add_permission
+    EnabledModule.create!(:project => Project.find(2), :name => 'risks')
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 1
+
+    assert_response :success
+    assert_select 'select[name=?]', 'risk[project_id]' do
+      assert_select 'option[value=?]', '1'
+      assert_select 'option[value=?]', '2', 0
+    end
+
+    Role.find(2).add_permission!(:add_risks) # jsmith is Developer on project 2
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => 1
+
+    assert_select 'select[name=?]', 'risk[project_id]' do
+      assert_select 'option[value=?]', '2'
+    end
+  end
+
+  def test_create_copy_in_target_project_without_add_permission_should_be_denied
+    EnabledModule.create!(:project => Project.find(2), :name => 'risks')
+
+    assert_no_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1,
+                         :risk => {:project_id => '2', :subject => 'Copy'}
+    end
+
+    assert_response 403
+  end
+
+  def test_create_copy_in_target_project_with_add_permission
+    EnabledModule.create!(:project => Project.find(2), :name => 'risks')
+    Role.find(2).add_permission!(:add_risks)
+
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :copy_from => 1,
+                         :risk => {:project_id => '2', :subject => 'Copy'}
+    end
+
+    assert_equal 2, Risk.order(:id).last.project_id
+  end
+
+  def test_copy_of_risk_from_non_visible_project_should_be_denied
+    risk = Risk.find(1)
+    risk.update_column(:project_id, 2) # risks module is not enabled on project 2
+
+    compatible_request :get, :new, :project_id => 'ecookbook', :copy_from => risk.id
+
+    assert_response 403
+  end
 end

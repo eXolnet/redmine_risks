@@ -120,4 +120,29 @@ class RiskContextMenusControllerTest < ActionController::TestCase
     assert_select 'a.icon-del.disabled'
     assert_select 'a[href*=?]', 'risk%5Bstrategy%5D', 0
   end
+
+  def test_get_risks_single_should_list_copy_link
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response :success
+    assert_select 'a.icon-copy:not(.disabled)[href=?]', '/projects/ecookbook/risks/1/copy'
+  end
+
+  def test_get_risks_many_should_not_list_copy_link
+    compatible_request :get, :index, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'a.icon-copy', 0
+  end
+
+  def test_get_risks_single_without_add_permission_should_disable_copy_link
+    Role.find(1).add_permission!(:view_risks)
+    Role.find(1).remove_permission!(:add_risks)
+    @request.session[:user_id] = 2
+
+    compatible_request :get, :index, :ids => [1]
+
+    assert_response :success
+    assert_select 'a.icon-copy.disabled'
+  end
 end
