@@ -1,0 +1,137 @@
+<h2><%= l(:label_bulk_edit_selected_risks) %></h2>
+
+<% if @saved_risks && @unsaved_risks.present? %>
+<div id="errorExplanation">
+  <%= notice_icon('error') %>
+  <span>
+    <%= l(:notice_failed_to_save_risks,
+          :count => @unsaved_risks.size,
+          :total => @saved_risks.size,
+          :ids => @unsaved_risks.map {|r| "##{r.id}"}.join(', ')) %>
+  </span>
+  <ul>
+  <% bulk_edit_error_messages(@unsaved_risks).each do |message| %>
+    <li><%= message %></li>
+  <% end %>
+  </ul>
+</div>
+<% end %>
+
+<ul id="bulk-selection">
+<% @risks.each do |risk| %>
+  <%= content_tag 'li', safe_join([link_to("#{l(:label_risk)} ##{risk.id}", risk_path(risk)), risk.subject], ': ') %>
+<% end %>
+</ul>
+
+<%= form_tag(bulk_update_risks_path, :id => 'bulk_edit_form') do %>
+<%= safe_join(@risks.map {|r| hidden_field_tag('ids[]', r.id, :id => nil)}, "\n") %>
+<%= hidden_field_tag 'back_url', params[:back_url], :id => nil if params[:back_url].present? %>
+<div class="box tabular">
+<fieldset class="attributes">
+<legend><%= l(:label_change_properties) %></legend>
+
+<div class="splitcontent">
+<div class="splitcontentleft">
+<% if @safe_attributes.include?('status') %>
+<p>
+  <label for="risk_status"><%= l(:field_status) %></label>
+  <%= select_tag('risk[status]',
+                 content_tag('option', l(:label_no_change_option), :value => '') +
+                   options_for_select(Risk::RISK_STATUS.map {|s| [format_risk_status(s), s]}, @risk_params[:status])) %>
+</p>
+<% end %>
+
+<% if @safe_attributes.include?('assigned_to_id') %>
+<p>
+  <label for="risk_assigned_to_id"><%= l(:field_assigned_to) %></label>
+  <%= select_tag('risk[assigned_to_id]',
+                 content_tag('option', l(:label_no_change_option), :value => '') +
+                   content_tag('option', l(:label_nobody), :value => 'none', :selected => (@risk_params[:assigned_to_id] == 'none')) +
+                   principals_options_for_select(@assignables, @risk_params[:assigned_to_id])) %>
+</p>
+<% end %>
+
+<% if @safe_attributes.include?('category_id') %>
+<p>
+  <label for="risk_category_id"><%= l(:field_category) %></label>
+  <%= select_tag('risk[category_id]',
+                 content_tag('option', l(:label_no_change_option), :value => '') +
+                   content_tag('option', l(:label_none), :value => 'none', :selected => (@risk_params[:category_id] == 'none')) +
+                   options_from_collection_for_select(@categories, :id, :name, @risk_params[:category_id])) %>
+</p>
+<% end %>
+
+<%= call_hook(:view_risks_bulk_edit_details_bottom, { :risks => @risks }) %>
+</div>
+
+<div class="splitcontentright">
+<% if @safe_attributes.include?('probability') %>
+<p>
+  <label for="risk_probability"><%= l(:field_probability) %></label>
+  <%= select_tag('risk[probability]',
+                 content_tag('option', l(:label_no_change_option), :value => '') +
+                   content_tag('option', l(:label_none), :value => 'none', :selected => (@risk_params[:probability] == 'none')) +
+                   options_for_select(format_risk_levels(Risk::RISK_PROBABILITY) {|p| format_risk_probability(p)}, @risk_params[:probability])) %>
+</p>
+<% end %>
+
+<% if @safe_attributes.include?('impact') %>
+<p>
+  <label for="risk_impact"><%= l(:field_impact) %></label>
+  <%= select_tag('risk[impact]',
+                 content_tag('option', l(:label_no_change_option), :value => '') +
+                   content_tag('option', l(:label_none), :value => 'none', :selected => (@risk_params[:impact] == 'none')) +
+                   options_for_select(format_risk_levels(Risk::RISK_IMPACT) {|i| format_risk_impact(i)}, @risk_params[:impact])) %>
+</p>
+<% end %>
+
+<% if @safe_attributes.include?('strategy') %>
+<p>
+  <label for="risk_strategy"><%= l(:field_strategy) %></label>
+  <%= select_tag('risk[strategy]',
+                 content_tag('option', l(:label_no_change_option), :value => '') +
+                   content_tag('option', l(:label_none), :value => 'none', :selected => (@risk_params[:strategy] == 'none')) +
+                   options_for_select(Risk::RISK_STRATEGY.map {|s| [format_risk_strategy(s), s]}, @risk_params[:strategy])) %>
+</p>
+<% end %>
+</div>
+</div>
+
+<% custom_fields_full_width = @custom_fields.select(&:full_width_layout?) %>
+<% custom_fields = @custom_fields - custom_fields_full_width %>
+
+<% if custom_fields.present? %>
+<div class="splitcontent">
+  <div class="splitcontentleft">
+  <% split_on = (custom_fields.size / 2.0).ceil - 1 %>
+  <% custom_fields.each_with_index do |custom_field, i| %>
+    <p>
+      <label><%= custom_field.name %></label>
+      <%= custom_field_tag_for_bulk_edit('risk', custom_field, @risks, @risk_params[:custom_field_values][custom_field.id.to_s]) %>
+    </p>
+    <% if i == split_on %>
+      </div><div class="splitcontentright">
+    <% end %>
+  <% end %>
+  </div>
+</div>
+<% end %>
+
+<% custom_fields_full_width.each do |custom_field| %>
+  <p>
+    <label><%= custom_field.name %></label>
+    <%= custom_field_tag_for_bulk_edit('risk', custom_field, @risks, @risk_params[:custom_field_values][custom_field.id.to_s]) %>
+  </p>
+  <%= wikitoolbar_for "risk_custom_field_values_#{custom_field.id}", preview_new_risk_path(:project_id => @project || @risks.first.project) if custom_field.full_text_formatting? %>
+<% end %>
+</fieldset>
+
+<fieldset>
+<legend><%= l(:field_notes) %></legend>
+<%= text_area_tag 'notes', @notes, :cols => 60, :rows => 10, :class => 'wiki-edit' %>
+<%= wikitoolbar_for 'notes' %>
+</fieldset>
+</div>
+
+<p><%= submit_tag l(:button_submit) %></p>
+<% end %>

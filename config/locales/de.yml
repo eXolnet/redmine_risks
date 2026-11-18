@@ -42,6 +42,8 @@ de:
   notice_risk_successful_create: "Risiko erfolgreich erstellt."
   notice_risk_successful_update: "Risiko erfolgreich aktualisiert."
   notice_risk_successful_delete: "Riskio erfolgreich gelöscht."
+  notice_failed_to_save_risks: "%{count} von %{total} ausgewählten Risiken konnte(n) nicht gespeichert werden: %{ids}."
+  label_bulk_edit_selected_risks: "Ausgewählte Risiken bearbeiten"
   error_risk_issue_not_linkable: "Die Aufgabe kann nicht mit diesem Risiko verknüpft werden."
   error_risk_not_linkable: "Das Risiko kann nicht mit dieser Aufgabe verknüpft werden."
   label_related_risks: "Zugehörige Risiken"

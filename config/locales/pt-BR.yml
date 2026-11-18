@@ -42,6 +42,8 @@ pt-BR:
   notice_risk_successful_create: "Risco criado com sucesso."
   notice_risk_successful_update: "Risco alterado com sucesso."
   notice_risk_successful_delete: "Risco removido com sucesso"
+  notice_failed_to_save_risks: "%{count} risco(s) de %{total} selecionados não puderam ser salvos: %{ids}."
+  label_bulk_edit_selected_risks: "Editar riscos selecionados"
   error_risk_issue_not_linkable: "A tarefa não pode ser vinculada a este risco."
   error_risk_not_linkable: "O risco não pode ser vinculado a esta tarefa."
   label_related_risks: "Riscos relacionados"

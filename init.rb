@@ -18,7 +18,7 @@ Redmine::Plugin.register :redmine_risks do
   project_module :risks do
     permission :view_risks,            { :risks => [:index, :show] }, :read => true
     permission :add_risks,             { :risks => [:new, :create, :commit] }
-    permission :edit_risks,            { :risks => [:edit, :update] }
+    permission :edit_risks,            { :risks => [:edit, :update, :bulk_edit, :bulk_update] }
     permission :delete_risks,          { :risks => [:destroy] }, :require => :member
 
     # Related issues

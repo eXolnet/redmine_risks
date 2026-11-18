@@ -42,6 +42,8 @@ en:
   notice_risk_successful_create: "Risk successfully created."
   notice_risk_successful_update: "Risk successfully updated."
   notice_risk_successful_delete: "Risk successfully deleted."
+  notice_failed_to_save_risks: "%{count} risk(s) on %{total} selected could not be saved: %{ids}."
+  label_bulk_edit_selected_risks: "Edit selected risks"
   error_risk_issue_not_linkable: "The issue cannot be linked to this risk."
   error_risk_not_linkable: "The risk cannot be linked to this issue."
   label_related_risks: "Related risks"

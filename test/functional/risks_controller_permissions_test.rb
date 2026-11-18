@@ -397,8 +397,9 @@ class RisksControllerPermissionsTest < ActionController::TestCase
   def test_bulk_update_with_invalid_value_should_not_set_flash_notice
     compatible_request :post, :bulk_update, :ids => [1, 2], :risk => {:impact => 500}
 
-    assert_redirected_to '/projects/ecookbook/risks'
+    assert_response :success
     assert_nil flash[:notice]
+    assert_select '#errorExplanation', :text => /#1, #2/
     assert_equal [50, 75], Risk.where(:id => [1, 2]).order(:id).pluck(:impact)
   end
 
@@ -406,6 +407,66 @@ class RisksControllerPermissionsTest < ActionController::TestCase
     compatible_request :post, :bulk_update, :ids => [1], :risk => {:assigned_to_id => 'none'}
 
     assert_nil Risk.find(1).assigned_to_id
+  end
+
+  # bulk_edit
+
+  def test_bulk_edit_without_edit_permission_should_be_denied
+    @role.remove_permission!(:edit_risks)
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response 403
+  end
+
+  def test_bulk_edit_with_edit_permission_should_display_form
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'form#bulk_edit_form[action=?]', '/risks/bulk_update'
+  end
+
+  def test_bulk_edit_should_not_display_custom_fields_hidden_from_user_role
+    visible = RiskCustomField.create!(:name => 'Visible field', :field_format => 'string', :visible => true)
+    hidden = RiskCustomField.create!(:name => 'Hidden field', :field_format => 'string', :visible => false, :role_ids => [3])
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'input[name=?]', "risk[custom_field_values][#{visible.id}]"
+    assert_select 'input[name=?]', "risk[custom_field_values][#{hidden.id}]", 0
+  end
+
+  def test_bulk_update_should_ignore_custom_fields_hidden_from_user_role
+    hidden = RiskCustomField.create!(:name => 'Hidden field', :field_format => 'string', :visible => false, :role_ids => [3])
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:strategy => 'accept', :custom_field_values => {hidden.id.to_s => 'Hacked'}}
+
+    assert_redirected_to '/projects/ecookbook/risks'
+    assert_equal 'accept', Risk.find(1).strategy
+    assert_nil CustomValue.find_by(:custom_field_id => hidden.id, :value => 'Hacked')
+  end
+
+  def test_bulk_edit_should_be_denied_if_one_risk_is_not_editable
+    EnabledModule.create!(:project_id => 2, :name => 'risks')
+    Role.find(2).add_permission!(:view_risks) # jsmith is Developer on project 2
+    risk = Risk.create!(:project_id => 2, :subject => 'Read-only risk', :author_id => 1)
+
+    compatible_request :get, :bulk_edit, :ids => [1, risk.id]
+
+    assert_response 403
+  end
+
+  def test_bulk_update_should_be_denied_if_one_risk_is_not_editable
+    EnabledModule.create!(:project_id => 2, :name => 'risks')
+    Role.find(2).add_permission!(:view_risks)
+    risk = Risk.create!(:project_id => 2, :subject => 'Read-only risk', :author_id => 1)
+
+    compatible_request :post, :bulk_update, :ids => [1, risk.id], :risk => {:strategy => 'accept'}
+
+    assert_response 403
+    assert_equal 'mitigate', Risk.find(1).strategy
   end
 
   # quoted

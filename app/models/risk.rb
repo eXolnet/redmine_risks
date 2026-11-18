@@ -1,4 +1,4 @@
-class Risk < ActiveRecord::Base
+class Risk < ApplicationRecord
   include Redmine::SafeAttributes
 
   include Redmine::Acts::Customizable

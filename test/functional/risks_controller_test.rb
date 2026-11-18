@@ -34,6 +34,7 @@ class RisksControllerTest < ActionController::TestCase
 
     assert_response :success
     assert_select 'form#risk-form[action=?]', '/projects/ecookbook/risks'
+    assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
   end
 
   def test_post_create
@@ -418,5 +419,196 @@ class RisksControllerTest < ActionController::TestCase
     risk = Risk.order('id DESC').first
     assert_equal 2, risk.project_id
     assert_equal 1, Risk.find(1).project_id
+  end
+
+  def test_get_bulk_edit
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'ul#bulk-selection li', 2
+    assert_select 'ul#bulk-selection li', :text => 'Risk #1: Sit sodales posuere' do
+      assert_select 'a[href=?]', '/risks/1', :text => 'Risk #1'
+    end
+    assert_select 'form#bulk_edit_form[action=?]', '/risks/bulk_update' do
+      assert_select 'input[name=?][value=?]', 'ids[]', '1'
+      assert_select 'input[name=?][value=?]', 'ids[]', '2'
+      %w(status category_id probability impact strategy assigned_to_id).each do |field|
+        assert_select "select[name=?]", "risk[#{field}]" do
+          assert_select 'option:first-child[value=""]', :text => '(No change)'
+        end
+      end
+      assert_select 'select[name=?] option[value=?]', 'risk[strategy]', 'none'
+      assert_select 'select[name=?] option[value=?]', 'risk[status]', 'closed'
+      assert_select 'textarea[name=?]', 'notes'
+    end
+  end
+
+  def test_get_edit_should_not_separate_submit_and_cancel_with_a_pipe
+    compatible_request :get, :edit, :id => 1
+
+    assert_response :success
+    assert_select 'form#risk-form a[href=?]', '/risks/1', :text => 'Cancel'
+    assert_no_match /\|\s*<a[^>]*>Cancel</, response.body
+  end
+
+  def test_get_edit_and_bulk_edit_should_label_assignee_consistently
+    compatible_request :get, :edit, :id => 1
+    assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+    assert_select 'label[for=risk_assigned_to_id]', :text => 'Assignee'
+  end
+
+  def test_get_bulk_edit_should_display_risk_custom_fields
+    string = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    list = RiskCustomField.create!(:name => 'Source', :field_format => 'list', :possible_values => ['Internal', 'Vendor'])
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'form#bulk_edit_form' do
+      assert_select 'input[type=text][name=?]', "risk[custom_field_values][#{string.id}]"
+      assert_select 'select[name=?]', "risk[custom_field_values][#{list.id}]" do
+        assert_select 'option[value=""]', :text => '(No change)'
+        assert_select 'option[value=?]', '__none__'
+        assert_select 'option[value=?]', 'Vendor'
+      end
+    end
+  end
+
+  def test_get_bulk_edit_should_display_full_width_custom_fields
+    field = RiskCustomField.create!(:name => 'Context', :field_format => 'text', :full_width_layout => '1', :text_formatting => 'full')
+
+    compatible_request :get, :bulk_edit, :ids => [1, 2]
+
+    assert_response :success
+    assert_select 'textarea[name=?].wiki-edit', "risk[custom_field_values][#{field.id}]"
+  end
+
+  def test_get_bulk_edit_with_unknown_risk_should_return_404
+    compatible_request :get, :bulk_edit, :ids => [999]
+
+    assert_response 404
+  end
+
+  def test_post_bulk_update_should_leave_unchanged_fields_untouched
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {
+        :status => '',
+        :category_id => '',
+        :probability => '',
+        :impact => '',
+        :strategy => 'accept',
+        :assigned_to_id => '',
+      }
+
+    assert_redirected_to '/projects/ecookbook/risks'
+
+    risk1 = Risk.find(1)
+    assert_equal 'open', risk1.status
+    assert_equal 1, risk1.category_id
+    assert_equal 25, risk1.probability
+    assert_equal 50, risk1.impact
+    assert_equal 1, risk1.assigned_to_id
+    assert_equal 'accept', risk1.strategy
+
+    risk2 = Risk.find(2)
+    assert_equal 'closed', risk2.status
+    assert_equal 50, risk2.probability
+    assert_equal 75, risk2.impact
+    assert_equal 'accept', risk2.strategy
+  end
+
+  def test_post_bulk_update_should_change_status_assignee_and_category
+    category = RiskCategory.create!(:name => 'Technical')
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:status => 'rejected', :assigned_to_id => 'none', :category_id => category.id}
+
+    Risk.where(:id => [1, 2]).each do |risk|
+      assert_equal 'rejected', risk.status
+      assert_not_nil risk.closed_on
+      assert_nil risk.assigned_to_id
+      assert_equal category.id, risk.category_id
+    end
+  end
+
+  def test_post_bulk_update_should_create_one_journal_per_risk
+    assert_difference 'Journal.where(:journalized_type => "Risk").count', 2 do
+      compatible_request :post, :bulk_update, :ids => [1, 2], :notes => 'Revue des risques', :risk => {:impact => 100}
+    end
+
+    [1, 2].each do |id|
+      journal = Journal.where(:journalized_type => 'Risk', :journalized_id => id).last
+      assert_equal 'Revue des risques', journal.notes
+      assert_equal 1, journal.user_id
+      assert journal.details.any? {|d| d.prop_key == 'impact' && d.value == '100'}
+    end
+  end
+
+  def test_post_bulk_update_should_update_custom_fields_and_journalize_them
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    assert_difference 'Journal.where(:journalized_type => "Risk").count', 2 do
+      compatible_request :post, :bulk_update, :ids => [1, 2],
+        :risk => {:custom_field_values => {field.id.to_s => 'Ops'}}
+    end
+
+    assert_redirected_to '/projects/ecookbook/risks'
+    [1, 2].each do |id|
+      assert_equal 'Ops', Risk.find(id).custom_field_value(field)
+      detail = Journal.where(:journalized_type => 'Risk', :journalized_id => id).last.details.first
+      assert_equal 'cf', detail.property
+      assert_equal field.id.to_s, detail.prop_key
+      assert_equal 'Ops', detail.value
+    end
+  end
+
+  def test_post_bulk_update_should_leave_custom_fields_with_no_change_untouched
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    Risk.find(1).tap {|r| r.custom_field_values = {field.id => 'Ops'}; r.save!}
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:strategy => 'accept', :custom_field_values => {field.id.to_s => ''}}
+
+    assert_equal 'Ops', Risk.find(1).custom_field_value(field)
+    assert_equal 'accept', Risk.find(1).strategy
+  end
+
+  def test_post_bulk_update_should_clear_custom_field_with_none
+    field = RiskCustomField.create!(:name => 'Source', :field_format => 'list', :possible_values => ['Internal', 'Vendor'])
+    [1, 2].each {|id| Risk.find(id).tap {|r| r.custom_field_values = {field.id => 'Vendor'}; r.save!}}
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:custom_field_values => {field.id.to_s => '__none__'}}
+
+    assert_equal ['', ''], [1, 2].map {|id| Risk.find(id).custom_field_value(field).to_s}
+  end
+
+  def test_post_bulk_update_with_invalid_custom_field_value_should_report_errors
+    field = RiskCustomField.create!(:name => 'Score', :field_format => 'int')
+
+    compatible_request :post, :bulk_update, :ids => [1, 2],
+      :risk => {:custom_field_values => {field.id.to_s => 'abc'}}
+
+    assert_response :success
+    assert_select '#errorExplanation li', :text => /Score is not a number/
+    assert_select "input[name=?][value=?]", "risk[custom_field_values][#{field.id}]", 'abc'
+  end
+
+  def test_post_bulk_update_should_report_unsaved_risks_without_blocking_others
+    Risk.find(2).update_column(:subject, '')
+
+    assert_difference 'Journal.where(:journalized_type => "Risk").count', 1 do
+      compatible_request :post, :bulk_update, :ids => [1, 2], :notes => 'Bulk', :risk => {:strategy => 'accept'}
+    end
+
+    assert_response :success
+    assert_select '#errorExplanation', :text => /1 risk\(s\) on 2 selected could not be saved: #2/
+    assert_select 'ul#bulk-selection li', 1
+    assert_select 'input[name=?][value=?]', 'ids[]', '2'
+    assert_select 'select[name=?] option[value=?][selected=selected]', 'risk[strategy]', 'accept'
+    assert_equal 'accept', Risk.find(1).strategy
+    assert_equal 'transfer', Risk.find(2).strategy
   end
 end

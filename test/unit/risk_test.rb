@@ -692,4 +692,11 @@ class RiskTest < ActiveSupport::TestCase
     assert_equal 'Copied', risk.subject
     assert_equal Project.find(1), risk.project
   end
+
+  def test_human_attribute_name_should_use_redmine_field_labels
+    with_locale('en') do
+      assert_equal 'Assignee', Risk.human_attribute_name(:assigned_to_id)
+      assert_equal 'Lessons learned', Risk.human_attribute_name(:lessons)
+    end
+  end
 end

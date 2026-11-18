@@ -3,7 +3,7 @@ class RisksController < ApplicationController
   menu_item :risks
 
   before_action :find_risk, :only => [:show, :edit, :update, :quoted]
-  before_action :find_risks, :only => [:bulk_update, :destroy]
+  before_action :find_risks, :only => [:bulk_edit, :bulk_update, :destroy]
   before_action :find_optional_project, :only => [:index, :new, :create]
   before_action :build_new_risk_from_params, :only => [:new, :create]
 
@@ -203,6 +203,23 @@ class RisksController < ApplicationController
     render :template => 'journals/new'
   end
 
+  def bulk_edit
+    @risks.sort!
+    @notes = params[:notes]
+
+    raise ::Unauthorized unless @risks.all?(&:attributes_editable?)
+
+    @safe_attributes = @risks.map(&:safe_attribute_names).reduce(:&)
+    @assignables = @risks.map(&:assignable_users).reduce(:&)
+    @categories = RiskCategory.active.order(:name).to_a
+    @custom_fields = @risks.map {|risk| risk.editable_custom_field_values.map(&:custom_field)}.
+      reduce(:&).
+      select {|field| field.format.bulk_edit_supported}
+
+    @risk_params = params[:risk] || {}
+    @risk_params[:custom_field_values] ||= {}
+  end
+
   def bulk_update
     @risks.sort!
 
@@ -212,26 +229,32 @@ class RisksController < ApplicationController
     risks_unsaved = []
     risks_saved = []
 
-    @risks.each do |risk_original|
-      risk_original.reload
-
-      risk = risk_original
-
+    @risks.each do |risk|
+      risk.reload
       risk.init_journal(User.current, params[:notes])
       risk.safe_attributes = attributes
+
+      call_hook(:controller_risks_bulk_edit_before_save, { :params => params, :risk => risk })
 
       if risk.save
         risks_saved << risk
       else
-        risks_unsaved << risk_original
+        risks_unsaved << risk
       end
     end
 
     if risks_unsaved.empty?
       flash[:notice] = l(:notice_risk_successful_update) unless risks_saved.empty?
-    end
 
-    redirect_back_or_default(@project ? project_risks_path(@project) : home_path)
+      redirect_back_or_default(@project ? project_risks_path(@project) : home_path)
+    else
+      @saved_risks = @risks
+      @unsaved_risks = risks_unsaved
+      @risks = Risk.where(:id => @unsaved_risks.map(&:id)).to_a
+
+      bulk_edit
+      render :action => 'bulk_edit'
+    end
   end
 
   private

@@ -1,13 +1,17 @@
 <ul>
   <%= call_hook(:view_risks_context_menu_start, {:risks => @risks, :can => @can, :back => @back }) %>
 
-  <% if @risk -%>
-    <li>
+  <li>
+    <% if @risk -%>
       <%= context_menu_link sprite_icon('edit', l(:button_edit)), edit_risk_path(@risk),
                             :class => 'icon icon-edit',
                             :disabled => !@can[:edit] %>
-    </li>
-  <% end -%>
+    <% else -%>
+      <%= context_menu_link sprite_icon('edit', l(:label_bulk_edit)), bulk_edit_risks_path(:ids => @risk_ids, :back_url => @back),
+                            :class => 'icon icon-edit',
+                            :disabled => !@can[:edit] %>
+    <% end -%>
+  </li>
 
   <% if @safe_attributes.include?('status') -%>
     <li class="folder">
