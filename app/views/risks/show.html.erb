@@ -85,6 +85,13 @@
 
 <%= render :partial => 'action_menu' %>
 
+<div style="clear: both;"></div>
+
+<% other_formats_links do |f| %>
+  <%= f.link_to 'PDF' %>
+  <%= f.link_to 'Atom', :url => {:key => User.current.atom_key} %>
+<% end %>
+
 <% if @risk.editable? %>
   <div id="update" style="display:none;">
     <h3><%= l(:button_edit) %></h3>
@@ -93,5 +100,9 @@
 <% end %>
 
 <% html_title l(:label_risk) + " ##{@risk.id}: #{@risk.subject}" %>
+
+<% content_for :header_tags do %>
+  <%= auto_discovery_link_tag(:atom, {:format => 'atom', :key => User.current.atom_key}, :title => "#{@risk.project} - #{l(:label_risk)} ##{@risk.id}: #{@risk.subject}") %>
+<% end %>
 
 <%= context_menu %>
