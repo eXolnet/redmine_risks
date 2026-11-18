@@ -221,6 +221,108 @@ class RisksControllerTest < ActionController::TestCase
     assert_equal ['accept'], Risk.where(:id => [1, risk.id]).distinct.pluck(:strategy)
   end
 
+  def test_get_new_should_display_risk_custom_fields
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string', :is_required => true)
+
+    compatible_request :get, :new, :project_id => 'ecookbook'
+
+    assert_response :success
+    assert_select 'input[name=?]', "risk[custom_field_values][#{field.id}]"
+    assert_select 'label[for=?] span.required', "risk_custom_field_values_#{field.id}"
+  end
+
+  def test_post_create_with_risk_custom_field
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    assert_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook',
+        :risk => {:subject => 'Subject', :custom_field_values => {field.id.to_s => 'Ops'}}
+    end
+
+    assert_equal 'Ops', Risk.order(:id).last.custom_field_value(field)
+  end
+
+  def test_post_create_without_required_risk_custom_field_should_fail
+    RiskCustomField.create!(:name => 'Owner team', :field_format => 'string', :is_required => true)
+
+    assert_no_difference 'Risk.count' do
+      compatible_request :post, :create, :project_id => 'ecookbook', :risk => {:subject => 'Subject'}
+    end
+
+    assert_response :success
+    assert_select '#errorExplanation', :text => /Owner team/
+  end
+
+  def test_get_edit_should_display_risk_custom_field_value
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    compatible_request :get, :edit, :id => 1
+
+    assert_response :success
+    assert_select 'input[name=?][value=?]', "risk[custom_field_values][#{field.id}]", 'Ops'
+  end
+
+  def test_put_update_with_risk_custom_field_should_journalize_the_change
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+
+    assert_difference 'Journal.count' do
+      compatible_request :put, :update, :id => 1, :risk => {:custom_field_values => {field.id.to_s => 'Ops'}}
+    end
+
+    assert_response 302
+    assert_equal 'Ops', Risk.find(1).custom_field_value(field)
+
+    compatible_request :get, :show, :id => 1
+    assert_select '#history ul.details li', :text => /Owner team.*Ops/
+  end
+
+  def test_get_show_should_display_visible_risk_custom_fields
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'string')
+    long_field = RiskCustomField.create!(:name => 'Context', :field_format => 'text', :full_width_layout => '1')
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops', long_field.id.to_s => 'Long context'}
+    risk.save!
+
+    compatible_request :get, :show, :id => 1
+
+    assert_response :success
+    assert_select "div.attributes div.cf_#{field.id} div.value", :text => 'Ops'
+    assert_select "div.cf_#{long_field.id} div.value", :text => /Long context/
+  end
+
+  def test_get_show_should_hide_risk_custom_fields_not_visible_by_the_user
+    Role.find(2).add_permission!(:view_risks, :edit_risks)
+    field = RiskCustomField.create!(:name => 'Managers only', :field_format => 'string', :visible => false, :role_ids => [1])
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Secret'}
+    risk.save!
+    @request.session[:user_id] = 3 # dlopper is Developer
+
+    compatible_request :get, :show, :id => 1
+
+    assert_response :success
+    assert_select "div.cf_#{field.id}", 0
+    assert_select 'input[name=?]', "risk[custom_field_values][#{field.id}]", 0
+  end
+
+  def test_get_index_with_risk_custom_field_column_and_group
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'list', :possible_values => ['Dev', 'Ops'])
+    risk = Risk.find(1)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    compatible_request :get, :index, :project_id => 'ecookbook', :set_filter => 1,
+      :c => ['subject', "cf_#{field.id}"], :group_by => "cf_#{field.id}"
+
+    assert_response :success
+    assert_select "table.risks th", :text => 'Owner team'
+    assert_select "table.risks tr#risk-1 td.cf_#{field.id}", :text => 'Ops'
+    assert_select 'tr.group span.name', :text => 'Ops'
+  end
+
   def test_get_copy_should_prefill_form
     category = RiskCategory.create!(:name => 'Technical')
     Risk.find(1).update_column(:category_id, category.id)

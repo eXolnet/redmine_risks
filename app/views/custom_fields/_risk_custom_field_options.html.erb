@@ -1,0 +1,4 @@
+<% if custom_field.format.is_filter_supported %>
+  <p><%= form.check_box :is_filter %></p>
+<% end %>
+<%= render :partial => 'custom_fields/visibility_by_role_selector', :locals => { :f => form } %>

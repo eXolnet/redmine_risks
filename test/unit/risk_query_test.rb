@@ -242,4 +242,70 @@ class RiskQueryTest < ActiveSupport::TestCase
       end
     end
   end
+
+
+  def test_risk_custom_field_should_be_available_as_column_filter_and_group
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'list',
+                                    :possible_values => ['Dev', 'Ops'], :is_filter => true)
+    query = build_query
+
+    column = query.available_columns.detect {|c| c.name == "cf_#{field.id}".to_sym}
+    assert_kind_of QueryCustomFieldColumn, column
+    assert column.sortable
+    assert column.groupable?
+    assert_not_nil query.available_filters["cf_#{field.id}"]
+  end
+
+  def test_risk_custom_field_not_flagged_as_filter_should_not_be_a_filter
+    field = RiskCustomField.create!(:name => 'Notes', :field_format => 'string', :is_filter => false)
+
+    assert_nil build_query.available_filters["cf_#{field.id}"]
+  end
+
+  def test_filter_on_risk_custom_field
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'list',
+                                    :possible_values => ['Dev', 'Ops'], :is_filter => true)
+    risk = Risk.find(2)
+    risk.custom_field_values = {field.id.to_s => 'Ops'}
+    risk.save!
+
+    query = build_query("cf_#{field.id}" => ['=', ['Ops']])
+    assert_equal [2], risk_ids(query)
+
+    query = build_query("cf_#{field.id}" => ['!*', ['']])
+    assert_equal [1], risk_ids(query)
+  end
+
+  def test_group_and_sort_by_risk_custom_field
+    field = RiskCustomField.create!(:name => 'Owner team', :field_format => 'list',
+                                    :possible_values => ['Dev', 'Ops'])
+    {1 => 'Ops', 2 => 'Dev'}.each do |id, value|
+      risk = Risk.find(id)
+      risk.custom_field_values = {field.id.to_s => value}
+      risk.save!
+    end
+
+    query = build_query({'status' => ['*', ['']]},
+                        :group_by => "cf_#{field.id}", :sort => [["cf_#{field.id}", 'asc']],
+                        :columns => [:id, :subject, "cf_#{field.id}".to_sym])
+
+    assert query.grouped?
+    assert_equal [2, 1], query.risks.map(&:id)
+    assert_equal({'Dev' => 1, 'Ops' => 1}, query.result_count_by_group.transform_keys(&:to_s))
+  end
+
+  def test_risk_custom_field_restricted_to_roles_should_be_hidden_from_other_users
+    Role.find(1).add_permission!(:view_risks)
+    Role.find(2).add_permission!(:view_risks)
+    field = RiskCustomField.create!(:name => 'Managers only', :field_format => 'string', :is_filter => true,
+                                    :visible => false, :role_ids => [1])
+
+    User.current = User.find(2) # Manager
+    assert build_query.available_columns.any? {|c| c.name == "cf_#{field.id}".to_sym}
+    assert_not_nil build_query.available_filters["cf_#{field.id}"]
+
+    User.current = User.find(3) # Developer
+    assert build_query.available_columns.none? {|c| c.name == "cf_#{field.id}".to_sym}
+    assert_nil build_query.available_filters["cf_#{field.id}"]
+  end
 end

@@ -233,6 +233,7 @@ class Risk < ActiveRecord::Base
                   'treatments',
                   'lessons',
                   'custom_field_values',
+                  'custom_fields',
                   'notes',
                   :if => lambda {|risk, user| risk.new_record? || risk.attributes_editable?(user) }
 
@@ -273,6 +274,11 @@ class Risk < ActiveRecord::Base
     end
 
     super(attrs, user)
+  end
+
+  # Returns the custom fields that apply to risks (see RiskCustomField)
+  def available_custom_fields
+    RiskCustomField.sorted.to_a
   end
 
   # Returns the custom_field_values that can be edited by the given user

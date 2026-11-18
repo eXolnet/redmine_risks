@@ -26,5 +26,11 @@
         <p><%= f.select :strategy, Risk::RISK_STRATEGY.collect {|p| [format_risk_strategy(p), p]}, :include_blank => true %></p>
       <% end %>
     </div>
+
+    <div class="splitcontentright">
+      <% @risk.editable_custom_field_values.each do |value| %>
+        <p><%= custom_field_tag_with_label :risk, value, :required => value.custom_field.is_required? %></p>
+      <% end %>
+    </div>
   </div>
 <% end %>
